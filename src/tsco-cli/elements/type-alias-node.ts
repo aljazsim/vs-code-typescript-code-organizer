@@ -1,13 +1,13 @@
 import * as ts from "typescript";
 
-import { TypeConfiguration } from "../configuration/type-configuration.js";
-import { TypeMemberType } from "../enums/type-member-type.js";
-import { order } from "../helpers/node-helper.js";
-import { ElementNodeGroup } from "./element-node-group.js";
-import { ElementNode } from "./element-node.js";
-import { IndexSignatureNode } from "./index-signature-node.js";
-import { MethodSignatureNode } from "./method-signature-node.js";
-import { PropertySignatureNode } from "./property-signature-node.js";
+import { TypeConfiguration } from "../configuration/type-configuration";
+import { TypeMemberType } from "../enums/type-member-type";
+import { order } from "../helpers/node-helper";
+import { ElementNode } from "./element-node";
+import { ElementNodeGroup } from "./element-node-group";
+import { IndexSignatureNode } from "./index-signature-node";
+import { MethodSignatureNode } from "./method-signature-node";
+import { PropertySignatureNode } from "./property-signature-node";
 
 export class TypeAliasNode extends ElementNode
 {

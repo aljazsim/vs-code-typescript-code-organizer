@@ -1,15 +1,15 @@
 import * as ts from "typescript";
 
-import { InterfaceConfiguration } from "../configuration/interface-configuration.js";
-import { InterfaceMemberType } from "../enums/interface-member-type.js";
-import { isReadOnly, isWritable, order } from "../helpers/node-helper.js";
-import { ElementNodeGroup } from "./element-node-group.js";
-import { ElementNode } from "./element-node.js";
-import { GetterNode } from "./getter-node.js";
-import { IndexSignatureNode } from "./index-signature-node.js";
-import { MethodSignatureNode } from "./method-signature-node.js";
-import { PropertySignatureNode } from "./property-signature-node.js";
-import { SetterNode } from "./setter-node.js";
+import { InterfaceConfiguration } from "../configuration/interface-configuration";
+import { InterfaceMemberType } from "../enums/interface-member-type";
+import { isReadOnly, isWritable, order } from "../helpers/node-helper";
+import { ElementNode } from "./element-node";
+import { ElementNodeGroup } from "./element-node-group";
+import { GetterNode } from "./getter-node";
+import { IndexSignatureNode } from "./index-signature-node";
+import { MethodSignatureNode } from "./method-signature-node";
+import { PropertySignatureNode } from "./property-signature-node";
+import { SetterNode } from "./setter-node";
 
 export class InterfaceNode extends ElementNode
 {

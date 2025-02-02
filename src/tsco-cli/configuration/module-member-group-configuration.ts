@@ -1,4 +1,4 @@
-import { ModuleMemberType } from "../enums/module-member-type.js";
+import { ModuleMemberType } from "../enums/module-member-type";
 
 export class ModuleMemberGroupConfiguration
 {

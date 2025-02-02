@@ -56,6 +56,11 @@
         },
         "commands": [
             {
+                "command": "tsco.initialize",
+                "title": "Create Configuration File",
+                "category": "TypeScript Code Organizer"
+            },
+            {
                 "command": "tsco.organize",
                 "title": "Organize Current File",
                 "category": "TypeScript Code Organizer",
@@ -93,7 +98,7 @@
             }
         ]
     },
-    "main": "./out/extension",
+    "main": "./out/src/extension",
     "scripts": {
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
@@ -103,8 +108,6 @@
         "prepare": "husky"
     },
     "devDependencies": {
-        "@types/glob": "^8.1.0",
-        "@types/mocha": "^10.0.10",
         "@types/node": "^22.13.0",
         "@types/vscode": "^1.96.0",
         "@typescript-eslint/eslint-plugin": "^8.22.0",
@@ -112,7 +115,6 @@
         "@vscode/test-electron": "^2.4.1",
         "eslint": "^9.19.0",
         "glob": "^11.0.1",
-        "mocha": "^11.1.0",
         "husky": "^9.1.7"
     },
     "dependencies": {

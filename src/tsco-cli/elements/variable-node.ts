@@ -1,7 +1,7 @@
 import * as ts from "typescript";
 
-import { getDependencies, getIsArrowFunction } from "../helpers/node-helper.js";
-import { ElementNode } from "./element-node.js";
+import { getDependencies, getIsArrowFunction } from "../helpers/node-helper";
+import { ElementNode } from "./element-node";
 
 export class VariableNode extends ElementNode
 {

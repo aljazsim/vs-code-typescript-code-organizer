@@ -1,4 +1,4 @@
-import { ImportSourceFilePathQuoteType } from "../enums/Import-source-file-path-quote-type.js";
+import { ImportSourceFilePathQuoteType } from "../enums/Import-source-file-path-quote-type";
 
 export class ImportConfiguration
 {

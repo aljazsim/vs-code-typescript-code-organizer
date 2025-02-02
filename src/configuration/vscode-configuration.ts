@@ -8,7 +8,7 @@ export class VscodeConfiguration
     {
     }
 
-    // #endregion Constructors (1)
+    // #endregion Constructors
 
     // #region Public Static Methods (1)
 
@@ -21,5 +21,5 @@ export class VscodeConfiguration
         );
     }
 
-    // #endregion Public Static Methods (1)
-} 
+    // #endregion Public Static Methods
+}

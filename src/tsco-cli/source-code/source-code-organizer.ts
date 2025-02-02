@@ -1,22 +1,22 @@
 import ts, { SourceFile } from "typescript";
 
-import { Configuration } from "../configuration/configuration.js";
-import { ImportConfiguration } from "../configuration/import-configuration.js";
-import { ElementNodeGroup } from "../elements/element-node-group.js";
-import { ElementNode } from "../elements/element-node.js";
-import { ImportNode } from "../elements/import-node.js";
-import { ModuleMemberType } from "../enums/module-member-type.js";
-import { distinct, remove } from "../helpers/array-helper.js";
-import { compareStrings } from "../helpers/comparing-helper.js";
-import { getFileExtension } from "../helpers/file-system-helper.js";
-import { getClasses, getEnums, getExpressions, getFunctions, getImports, getInterfaces, getTypeAliases, getVariables, order } from "../helpers/node-helper.js";
-import { SourceCodeAnalyzer } from "./source-code-analyzer.js";
-import { SourceCodePrinter } from "./source-code-printer.js";
-import { SourceCode } from "./source-code.js";
+import { Configuration } from "../configuration/configuration";
+import { ImportConfiguration } from "../configuration/import-configuration";
+import { ElementNode } from "../elements/element-node";
+import { ElementNodeGroup } from "../elements/element-node-group";
+import { ImportNode } from "../elements/import-node";
+import { ModuleMemberType } from "../enums/module-member-type";
+import { distinct, remove } from "../helpers/array-helper";
+import { compareStrings } from "../helpers/comparing-helper";
+import { getFileExtension } from "../helpers/file-system-helper";
+import { getClasses, getEnums, getExpressions, getFunctions, getImports, getInterfaces, getTypeAliases, getVariables, order } from "../helpers/node-helper";
+import { SourceCode } from "./source-code";
+import { SourceCodeAnalyzer } from "./source-code-analyzer";
+import { SourceCodePrinter } from "./source-code-printer";
 
 export class SourceCodeOrganizer
 {
-    // #region Public Static Methods (2)
+    // #region Public Static Methods (1)
 
     public static async organizeSourceCode(sourceCodeFilePath: string, sourceCode: string, configuration: Configuration)
     {

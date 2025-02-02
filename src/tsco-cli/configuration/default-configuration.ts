@@ -1,9 +1,9 @@
-import { ImportSourceFilePathQuoteType } from "../enums/Import-source-file-path-quote-type.js";
-import { ClassMemberType } from "../enums/class-member-type.js";
-import { InterfaceMemberType } from "../enums/interface-member-type.js";
-import { ModuleMemberType } from "../enums/module-member-type.js";
-import { TypeMemberType } from "../enums/type-member-type.js";
-import { Configuration } from "./configuration.js";
+import { ImportSourceFilePathQuoteType } from "../enums/Import-source-file-path-quote-type";
+import { ClassMemberType } from "../enums/class-member-type";
+import { InterfaceMemberType } from "../enums/interface-member-type";
+import { ModuleMemberType } from "../enums/module-member-type";
+import { TypeMemberType } from "../enums/type-member-type";
+import { Configuration } from "./configuration";
 
 // #region Variables (1)
 

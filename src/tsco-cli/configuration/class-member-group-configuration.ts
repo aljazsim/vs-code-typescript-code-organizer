@@ -1,4 +1,4 @@
-import { ClassMemberType } from "../enums/class-member-type.js";
+import { ClassMemberType } from "../enums/class-member-type";
 
 export class ClassMemberGroupConfiguration
 {
