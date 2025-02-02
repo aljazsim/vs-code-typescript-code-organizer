@@ -1,12 +1,14 @@
-# TypeScript Class Organizer for VS Code
+# TypeScript Code Organizer for VS Code
 
 VS Code extension for keeping your TypeScript code organized by grouping and ordering class members.
+
+TypeScript Code Organizer is a VS Code extension for organizing TypeScript source code in a project workspace. It allows software developers to organize import statements, modules, classes, interfaces and type members and helps them keep their source code more consistent and easier to navigate. It is highly configurable and allows sharing of the configuration across the development team. Everything from import statements, regions, grouping to sorting can be configured! It also comes as a command line tool, see [TypeScript Code Organizer Command Line Interface](https://www.npmjs.com/package/tsco-cli).
 
 ## Features
 
 Organize currently opened TypeScript file or all TypeScript files in your project.
 
-![TypeScript Class Organizer](./doc/demo1.gif "TypeScript Class Organizer")
+![TypeScript Code Organizer](./doc/demo-1.gif "TypeScript Code Organizer")
 
 ## Usage
 
@@ -14,389 +16,41 @@ Organize currently opened TypeScript file or all TypeScript files in your projec
 
 From the command palette you can:
 
-- organize current TypeScript file by invoking command `TypeScript Class Organizer: Organize Current File`,
-- organize all TypeScript files in the project by invoking command `TypeScript Class Organizer: Organize All Files`
+- create default configuration file by invoking command `TypeScript Code Organizer: Create Configuration File`,
+- organize current TypeScript file by invoking command `TypeScript Code Organizer: Organize Current File`,
+- organize all TypeScript files in the project by invoking command `TypeScript Code Organizer: Organize All Files`
 
 ![Command Palette](./doc/command_palette.png "Command Palette")
 
 ### Keybboard Shortcuts
 
-You can invoke command `TypeScript Class Organizer: Organize Current File` by using the shortcut Ctr + Shift + O. You can change the shortcut by assigning a different shortcut to command "tsco.organize".
+You can invoke command `TypeScript Code Organizer: Organize Current File` by using the shortcut `Ctr + Shift + O`. You can change the shortcut by assigning a different shortcut to command "tsco.organize". The shortcut `Ctr + Shift + O` only works if the opened file is a TypeScript file.
 
 ![Shortcut](./doc/shortcut.png "Shortcut")
 
 ### Context Menu
 
-You can invoke command `TypeScript Class Organizer: Organize Current File` by using the context menu item.
+You can invoke command `TypeScript Code Organizer: Organize Current File` by using the context menu item.
 
 ![Context Menu](./doc/context_menu.png "Context Menu")
 
-## Configuration
+## Extension Configuration
 
 Extensions supports the following configuration options:
 
-### Regions
+- `tsco.organizeOnSave`: Organizes TypeScripot code on save (set to false by default).
 
-- `tsco.useRegions`: Adds member group regions (true by default).
-- `tsco.addMemberCountInRegionName`: Adds member group region member count after region title (true by default).
-- `tsco.addPublicModifierIfMissing`: Adds public access modifier if missing (true by default).
-- `tsco.addRegionIndentation`: Adds region indentation (true by default).
-- `tsco.addRegionCaptionToRegionEnd`: Adds region caption to region end (true by default).
+## Code Organization Configuration
 
-### Access modifiers
+Code organization is configured by a `tsco.json` configuration file. To create a default TypeScript Code Organizer configuration file, invoke the following command:
 
-- `tsco.addPublicModifierIfMissing`: Adds a public access modifier if missing.
+![Create Configuration Command](./doc/create_configuration_command.png "Create Configuration Command")
 
-### Decorators
+This will create a `tsco.json` file at the workspace root directory. For configuration reference, see [TypeScript Code Organizer Configuration Reference](https://www.npmjs.com/package/tsco-cli). The configuration file should be commited to the repository and shared with team members to ensure consistent code organization configuration.
 
-- `tsco.groupPropertiesWithDecorators`: Properties with decorators will come first, ordered by decorator name, then by member name (false by default).
+## Ignoring files
 
-### Arrow functions
-- `tsco.treatArrowFunctionPropertiesAsMethods`: Arrow function properties will be treated as methods (false by default).
-
-### Actions
-- `tsco.organizeOnSave`: Source code will get organized automatically on file saved (false by default). This now includes auto-save with `onFocusChange` and `afterDelay` settings.
-
-### Member ordering
-
-- `tsco.memberOrder`: Configuration of grouping and ordering of members.
-
-By default members are grouped and ordered in the following way:
-
-- properties,
-  - private static const properties,
-  - private const properties,
-  - private static readonly properties,
-  - private readonly properties,
-  - private static properties,
-  - private properties,
-  - protected static const properties,
-  - protected const properties,
-  - protected static readonly properties,
-  - protected readonly properties,
-  - protected static properties,
-  - protected properties,
-  - public static const properties,
-  - public const properties,
-  - public static readonly properties,
-  - public readonly properties,
-  - public static properties,
-  - public properties,
-- static block declarations,
-- constructors,
-- public static indexes,
-- public indexes,
-- public abstract indexes,
-- protected static indexes,
-- protected indexes,
-- protected abstract indexes,
-- private static indexes,
-- private indexes,
-- private abstract indexes,
-- public static accessors,
-- public accessors,
-- public abstract accessors,
-- protected static accessors,
-- protected accessors,
-- protected abstract accessors,
-- private static accessors,
-- private accessors,
-- private abstract accessors,
-- public static getters and setters,
-- public getters and setters,
-- public abstract getters and setters,
-- protected static getters and setters,
-- protected getters and setters,
-- protected abstract getters and setters,
-- private static getters and setters,
-- private getters and setters,
-- private abstract getters and setters,
-- public static methods,
-- public methods,
-- public abstract methods,
-- protected static methods,
-- protected methods,
-- protected abstract methods,
-- private static methods,
-- private methods,
-- private abstract methods.
-
-This configuration can ge changed by using the `tsco.memberOrder` setting in `settings.json``. Members can be grouped separately or grouped together with other member groups in a two level hierarchy. Every group has a property:
-
-- `caption` (only for top level groups): the caption will be outputted if `tsco.useRegions` is set to true,
-- `memberType` (top and bottom level groups): the type of the member in the group:
-  - privateStaticConstProperties
-  - privateConstProperties
-  - privateStaticReadOnlyProperties
-  - privateReadOnlyProperties
-  - privateStaticProperties
-  - privateProperties
-  - protectedStaticConstProperties
-  - protectedConstProperties
-  - protectedStaticReadOnlyProperties
-  - protectedReadOnlyProperties
-  - protectedStaticProperties
-  - protectedProperties
-  - publicStaticConstProperties
-  - publicConstProperties
-  - publicStaticReadOnlyProperties
-  - publicReadOnlyProperties
-  - publicStaticProperties
-  - publicProperties
-  - staticBlockDeclarations,
-  - constructors
-  - publicStaticIndexes
-  - publicIndexes
-  - publicAbstractIndexes
-  - protectedStaticIndexes
-  - protectedIndexes
-  - protectedAbstractIndexes
-  - privateStaticIndexes
-  - privateIndexes
-  - privateAbstractIndexes
-  - publicStaticAccessors
-  - publicAccessors
-  - publicAbstractAccessors
-  - protectedStaticAccessors
-  - protectedAccessors
-  - protectedAbstractAccessors
-  - privateStaticAccessors
-  - privateAccessors
-  - privateAbstractAccessors
-  - publicStaticGettersAndSetters
-  - publicGettersAndSetters
-  - publicAbstractGettersAndSetters
-  - protectedStaticGettersAndSetters
-  - protectedGettersAndSetters
-  - protectedAbstractGettersAndSetters
-  - privateStaticGettersAndSetters
-  - privateGettersAndSetters
-  - privateAbstractGettersAndSetters
-  - publicStaticMethods
-  - publicMethods
-  - publicAbstractMethods
-  - protectedStaticMethods
-  - protectedMethods
-  - protectedAbstractMethods
-  - privateStaticMethods
-  - privateMethods
-  - privateAbstractMethod
-- `subGroups` (only for top level groups): the array of member types to be included in this group.
-- `placeAbove`: list of member names to be put at the top of the group in the order specified (optional)
-- `placeBelow`: list of member names to be put at the bottom of the group in the order specified (optional)
-
-Example of the default `tsco.memberOrder` setting:
-
-```json
-{
-  "tsco.memberOrder": [
-    {
-      "caption": "Properties",
-      "memberTypes": [
-        "privateStaticConstProperties",
-        "privateConstProperties",
-        "privateStaticReadOnlyProperties",
-        "privateReadOnlyProperties",
-        "privateStaticProperties",
-        "privateProperties",
-        "protectedStaticConstProperties",
-        "protectedConstProperties",
-        "protectedStaticReadOnlyProperties",
-        "protectedReadOnlyProperties",
-        "protectedStaticProperties",
-        "protectedProperties",
-        "publicStaticConstProperties",
-        "publicConstProperties",
-        "publicStaticReadOnlyProperties",
-        "publicReadOnlyProperties",
-        "publicStaticProperties",
-        "publicProperties"
-      ]
-    },
-    {
-      "caption": "Static Block Declarations",
-      "memberTypes": ["staticBlockDeclarations"]
-    },
-    {
-      "caption": "Constructors",
-      "memberTypes": ["constructors"]
-    },
-    {
-      "caption": "Public Static Indexers",
-      "memberTypes": ["publicStaticIndexes"]
-    },
-    {
-      "caption": "Public Indexers",
-      "memberTypes": ["publicIndexes"]
-    },
-    {
-      "caption": "Public Abstract Indexers",
-      "memberTypes": ["publicAbstractIndexes"]
-    },
-    {
-      "caption": "Protected Static Indexers",
-      "memberTypes": ["protectedStaticIndexes"]
-    },
-    {
-      "caption": "Protected Indexers",
-      "memberTypes": ["protectedIndexes"]
-    },
-    {
-      "caption": "Protected Abstract Indexers",
-      "memberTypes": ["protectedAbstractIndexes"]
-    },
-    {
-      "caption": "Private Static Indexers",
-      "memberTypes": ["privateStaticIndexes"]
-    },
-    {
-      "caption": "Private Indexers",
-      "memberTypes": ["privateIndexes"]
-    },
-    {
-      "caption": "Private Abstract Indexers",
-      "memberTypes": ["privateAbstractIndexes"]
-    },
-    {
-      "caption": "Public Static Accessors",
-      "memberTypes": ["publicStaticAccessors"]
-    },
-    {
-      "caption": "Public Accessors",
-      "memberTypes": ["publicAccessors"]
-    },
-    {
-      "caption": "Public Abstract Accessors",
-      "memberTypes": ["publicAbstractAccessors"]
-    },
-    {
-      "caption": "Protected Static Accessors",
-      "memberTypes": ["protectedStaticAccessors"]
-    },
-    {
-      "caption": "Protected Accessors",
-      "memberTypes": ["protectedAccessors"]
-    },
-    {
-      "caption": "Protected Abstract Accessors",
-      "memberTypes": ["protectedAbstractAccessors"]
-    },
-    {
-      "caption": "Private Static Accessors",
-      "memberTypes": ["privateStaticAccessors"]
-    },
-    {
-      "caption": "Private Accessors",
-      "memberTypes": ["privateAccessors"]
-    },
-    {
-      "caption": "Private Abstract Accessors",
-      "memberTypes": ["privateAbstractAccessors"]
-    },
-    {
-      "caption": "Public Static Getters And Setters",
-      "memberTypes": ["publicStaticGettersAndSetters"]
-    },
-    {
-      "caption": "Public Getters And Setters",
-      "memberTypes": ["publicGettersAndSetters"]
-    },
-    {
-      "caption": "Public Abstract Getters And Setters",
-      "memberTypes": ["publicAbstractGettersAndSetters"]
-    },
-    {
-      "caption": "Protected Static Getters And Setters",
-      "memberTypes": ["protectedStaticGettersAndSetters"]
-    },
-    {
-      "caption": "Protected Getters And Setters",
-      "memberTypes": ["protectedGettersAndSetters"]
-    },
-    {
-      "caption": "Protected Abstract Getters And Setters",
-      "memberTypes": ["protectedAbstractGettersAndSetters"]
-    },
-    {
-      "caption": "Private Static Getters And Setters",
-      "memberTypes": ["privateStaticGettersAndSetters"]
-    },
-    {
-      "caption": "Private Getters And Setters",
-      "memberTypes": ["privateGettersAndSetters"]
-    },
-    {
-      "caption": "Private Abstract Getters And Setters",
-      "memberTypes": ["privateAbstractGettersAndSetters"]
-    },
-    {
-      "caption": "Public Static Methods",
-      "memberTypes": ["publicStaticMethods"]
-    },
-    {
-      "caption": "Public Methods",
-      "memberTypes": ["publicMethods"]
-    },
-    {
-      "caption": "Public Abstract Methods",
-      "memberTypes": ["publicAbstractMethods"]
-    },
-    {
-      "caption": "Protected Static Methods",
-      "memberTypes": ["protectedStaticMethods"]
-    },
-    {
-      "caption": "Protected Methods",
-      "memberTypes": ["protectedMethods"]
-    },
-    {
-      "caption": "Protected Abstract Methods",
-      "memberTypes": ["protectedAbstractMethods"]
-    },
-    {
-      "caption": "Private Static Methods",
-      "memberTypes": ["privateStaticMethods"]
-    },
-    {
-      "caption": "Private Methods",
-      "memberTypes": ["privateMethods"]
-    },
-    {
-      "caption": "Private Abstract Methods",
-      "memberTypes": ["privateAbstractMethods"]
-    }
-  ]
-}
-```
-
-If you'd like to order special members differently, you can yuse the `placeAbove` and `placeBelow` properties for a particular `tsco.memberOrder` item. If for example you prefer Angular component lifecycle methods on top of public methods, you can configure `publicMethods` member group like this:
-
-```json
-"tsco.memberOrder": [
-  ...,
-  {
-    "caption": "Public Methods",
-    "memberTypes": ["publicMethods"],
-    "placeAbove": [
-        "ngOnChanges", 
-        "ngOnInit", 
-        "ngDoCheck", 
-        "ngAfterContentInit", 
-        "ngAfterContentChecked", 
-        "ngAfterViewInit", 
-        "ngAfterViewChecked", 
-        "ngOnDestroy"
-    ]
-  },
-  ...
-]
-```
-
-The `placeAbove` methods will always apear at the top of the public method membber group in the list as specified (if any exist in the class being ordered) and the rest of the methods will be ordered by name and placed below the `placeAbove` methods. Same goes for `placeBelow`, but those members will be placed at the bottom of the member group.
-
-### Ignoring files
-
-In order to prevent a TypeScript file being organized, add one of the following comments to the top of the source file:
+In order to prevent a TypeScript file being organized you can add the file to the exclude list in the configuration file files section or add one of the following comments to the top of the TypeScript file:
 
 ```typescript
 // tsco:ignore
@@ -407,6 +61,14 @@ or
 ```typescript
 // <auto-generated />
 ```
+
+## Using TypeScript Code Organizer in command line
+
+See [TypeScript Code Organizer Command Line Interface](https://www.npmjs.com/package/tsco-cli) on NPM.
+
+## Using TypeScrpt Code Organizer With GIT pre-commit hook
+
+See [TypeScript Code Organizer Command Line Interface](https://www.npmjs.com/package/tsco-cli) on NPM.
 
 ## Change log
 
@@ -507,3 +169,22 @@ or
 
 - add organizing document on saving in any mode (not just manual saving) (courtesy of [Christopher Robinson](https://github.com/Christopher-C-Robinson))
 
+### 2.0.0
+
+- **configuration is no longer compatible with 1.x.x as version 2.0.0 uses a configuration file**
+- merged functionality with [TypeScript Class Organizer CLI](https://www.npmjs.com/package/tsco-cli)
+
+  - added support for configuration files
+  - added support for organizing import statements
+  - added ability to include/exclude files
+  - added support for organizing modules, interfaces and type aliases
+  - added more fine-grained support for treating arrow function variables and constants
+  - added more fine-grained configuration for module organization
+  - added more fine-grained configuration for interface organization
+  - added more fine-grained configuration for type alias organization
+
+- added ability to create a default configuration file
+
+- added support for regular expressions and globs when putting members above or below the member type group
+
+- added support for sorting member type groups asc, desc or no sorting

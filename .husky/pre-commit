@@ -1,0 +1,7 @@
+# organize code
+
+tsco --organize
+
+# format code
+
+eslint
