@@ -2,21 +2,21 @@ import ts, { SourceFile } from "typescript";
 
 import { Configuration } from "../configuration/configuration";
 import { ImportConfiguration } from "../configuration/import-configuration";
-import { ElementNode } from "../elements/element-node";
 import { ElementNodeGroup } from "../elements/element-node-group";
+import { ElementNode } from "../elements/element-node";
 import { ImportNode } from "../elements/import-node";
 import { ModuleMemberType } from "../enums/module-member-type";
 import { distinct, remove } from "../helpers/array-helper";
 import { compareStrings } from "../helpers/comparing-helper";
 import { getFileExtension } from "../helpers/file-system-helper";
 import { getClasses, getEnums, getExpressions, getFunctions, getImports, getInterfaces, getTypeAliases, getVariables, order } from "../helpers/node-helper";
-import { SourceCode } from "./source-code";
 import { SourceCodeAnalyzer } from "./source-code-analyzer";
 import { SourceCodePrinter } from "./source-code-printer";
+import { SourceCode } from "./source-code";
 
 export class SourceCodeOrganizer
 {
-    // #region Public Static Methods (1)
+    // #region Public Static Methods (2)
 
     public static async organizeSourceCode(sourceCodeFilePath: string, sourceCode: string, configuration: Configuration)
     {

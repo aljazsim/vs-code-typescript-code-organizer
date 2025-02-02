@@ -1,7 +1,16 @@
 import * as fs from "fs";
 import * as path from "path";
 
-// #region Exported Functions (13)
+// #region Functions (1)
+
+export function toUnixPath(filePath: string)
+{
+    return filePath.replaceAll("\\", "/");
+}
+
+// #endregion Functions
+
+// #region Exported Functions (12)
 
 export async function deleteFile(filePath: string)
 {
@@ -68,11 +77,6 @@ export function joinPath(path1: string, path2: string)
 export async function readFile(filePath: string)
 {
     return await fs.promises.readFile(filePath, "utf8") as string;
-}
-
-export function toUnixPath(filePath: string)
-{
-    return filePath.replaceAll("\\", "/");
 }
 
 export async function writeFile(filePath: string, fileContents: string, overwriteFile = true)
