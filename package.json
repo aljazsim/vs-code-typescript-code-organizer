@@ -2,7 +2,7 @@
     "name": "tsco",
     "displayName": "TypeScript Code Organizer",
     "description": "TypeScript Code Organizer for VS Code",
-    "version": "2.0.4",
+    "version": "2.0.0",
     "publisher": "aljazsim",
     "author": {
         "name": "aljazsim",
@@ -109,7 +109,7 @@
     },
     "devDependencies": {
         "@types/node": "^22.13.0",
-        "@types/vscode": "^1.69.1",
+        "@types/vscode": "^1.96.0",
         "typescript-eslint": "^8.19.1",
         "@vscode/test-electron": "^2.4.1",
         "eslint": "^9.19.0",
@@ -119,6 +119,7 @@
     "dependencies": {
         "typescript": "^5.6.3",
         "glob": "^11.0.1",
+        "watcher": "^2.3.1",
         "wildcard-match": "^5.1.4"
     }
 }
