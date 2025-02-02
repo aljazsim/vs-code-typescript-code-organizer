@@ -1,4 +1,4 @@
-# TypeScript Class Organizer for VS Code
+# TypeScript Code Organizer for VS Code
 
 VS Code extension for keeping your TypeScript code organized by grouping and ordering class members.
 
@@ -52,9 +52,11 @@ Extensions supports the following configuration options:
 - `tsco.groupPropertiesWithDecorators`: Properties with decorators will come first, ordered by decorator name, then by member name (false by default).
 
 ### Arrow functions
+
 - `tsco.treatArrowFunctionPropertiesAsMethods`: Arrow function properties will be treated as methods (false by default).
 
 ### Actions
+
 - `tsco.organizeOnSave`: Source code will get organized automatically on file saved (false by default). This now includes auto-save with `onFocusChange` and `afterDelay` settings.
 
 ### Member ordering
@@ -64,6 +66,7 @@ Extensions supports the following configuration options:
 By default members are grouped and ordered in the following way:
 
 - properties,
+
   - private static const properties,
   - private const properties,
   - private static readonly properties,
@@ -82,6 +85,7 @@ By default members are grouped and ordered in the following way:
   - public readonly properties,
   - public static properties,
   - public properties,
+
 - static block declarations,
 - constructors,
 - public static indexes,
@@ -125,6 +129,7 @@ This configuration can ge changed by using the `tsco.memberOrder` setting in `se
 
 - `caption` (only for top level groups): the caption will be outputted if `tsco.useRegions` is set to true,
 - `memberType` (top and bottom level groups): the type of the member in the group:
+
   - privateStaticConstProperties
   - privateConstProperties
   - privateStaticReadOnlyProperties
@@ -181,6 +186,7 @@ This configuration can ge changed by using the `tsco.memberOrder` setting in `se
   - privateStaticMethods
   - privateMethods
   - privateAbstractMethod
+
 - `subGroups` (only for top level groups): the array of member types to be included in this group.
 - `placeAbove`: list of member names to be put at the top of the group in the order specified (optional)
 - `placeBelow`: list of member names to be put at the bottom of the group in the order specified (optional)
@@ -506,4 +512,3 @@ or
 ### 1.0.31
 
 - add organizing document on saving in any mode (not just manual saving) (courtesy of [Christopher Robinson](https://github.com/Christopher-C-Robinson))
-
