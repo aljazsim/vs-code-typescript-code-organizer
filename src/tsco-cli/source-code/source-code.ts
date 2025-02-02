@@ -213,10 +213,10 @@ export class SourceCode
     public removeConsecutiveEmptyLines()
     {
         const newLine = "\r\n";
-        const emptyLineRegex = new RegExp(`^\\s * $`);
+        const emptyLineRegex = new RegExp(`^\\s*$`);
         const newLineRegex = new RegExp(`\r\n|\r`);
-        const openingBraceRegex = new RegExp(`^.*{ \\s*$`);
-        const closingBraceRegex = new RegExp(`^\\s *} \\s*$`);
+        const openingBraceRegex = new RegExp(`^.*{\\s*$`);
+        const closingBraceRegex = new RegExp(`^\\s*}\\s*$`);
         const lines: string[] = this.sourceCode.split(newLineRegex);
 
         for (let i = 0; i < lines.length - 1; i++)
