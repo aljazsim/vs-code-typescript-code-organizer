@@ -169,7 +169,7 @@ See [TypeScript Code Organizer Command Line Interface](https://www.npmjs.com/pac
 
 - add organizing document on saving in any mode (not just manual saving) (courtesy of [Christopher Robinson](https://github.com/Christopher-C-Robinson))
 
-### 2.0.4
+### 2.0.5
 
 - **configuration is no longer compatible with 1.x.x as version 2.x.x uses a configuration file**
 - merged functionality with [TypeScript Class Organizer CLI](https://www.npmjs.com/package/tsco-cli)
