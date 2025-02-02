@@ -68,7 +68,7 @@ See [TypeScript Code Organizer Command Line Interface](https://www.npmjs.com/pac
 
 ## Using TypeScrpt Code Organizer With GIT pre-commit hook
 
-[TypeScript Code Organizer Command Line Interface](https://www.npmjs.com/package/tsco-cli) on NPM.
+See [TypeScript Code Organizer Command Line Interface](https://www.npmjs.com/package/tsco-cli) on NPM.
 
 ## Change log
 

@@ -3,7 +3,7 @@ import * as path from "path";
 
 // #region Functions (1)
 
-export function toUnixPath(filePath: string)
+function toUnixPath(filePath: string)
 {
     return filePath.replaceAll("\\", "/");
 }
