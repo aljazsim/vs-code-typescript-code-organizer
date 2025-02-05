@@ -108,16 +108,17 @@
         "prepare": "husky"
     },
     "devDependencies": {
+        "@types/glob-to-regexp": "^0.4.4",
         "@types/node": "^22.13.0",
         "@types/vscode": "^1.69.1",
-        "typescript-eslint": "^8.19.1",
         "@vscode/test-electron": "^2.4.1",
         "eslint": "^9.19.0",
-        "husky": "^9.1.7"
+        "husky": "^9.1.7",
+        "typescript-eslint": "^8.19.1"
     },
     "dependencies": {
+        "glob-to-regexp": "^0.4.1",
         "typescript": "^5.6.3",
-        "glob": "^11.0.1",
         "wildcard-match": "^5.1.4"
     }
 }
