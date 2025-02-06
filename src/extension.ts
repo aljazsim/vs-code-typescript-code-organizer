@@ -1,9 +1,9 @@
-import { glob } from "glob";
+import globToRegExp from "glob-to-regexp";
 import * as vscode from "vscode";
 
 import { VscodeConfiguration } from "./configuration/vscode-configuration";
 import { Configuration } from "./tsco-cli/configuration/configuration";
-import { fileExists, getDirectoryPath, getFullPath, joinPath, readFile, writeFile } from "./tsco-cli/helpers/file-system-helper";
+import { fileExists, getFullPath, getRelativePath, joinPath, readFile, writeFile } from "./tsco-cli/helpers/file-system-helper";
 import { SourceCodeOrganizer } from "./tsco-cli/source-code/source-code-organizer";
 
 // #region Functions (7)
@@ -19,22 +19,6 @@ async function getConfiguration()
     else
     {
         return Configuration.getDefaultConfiguration();
-    }
-}
-
-async function getFilePaths(sourcesDirectoryPath: string, configuration: Configuration, filePath: string | null = null)
-{
-    const include = configuration.files.include.map(fp => joinPath(sourcesDirectoryPath, fp))
-    const exclude = configuration.files.exclude.map(fp => joinPath(sourcesDirectoryPath, fp))
-    const filePaths = (await glob(include, { ignore: exclude })).map(fp => getFullPath(fp)).sort();
-
-    if (filePath)
-    {
-        return filePaths.map(fp => getFullPath(fp)).filter(fp => fp.toLowerCase() === getFullPath(filePath).toLowerCase());
-    }
-    else
-    {
-        return filePaths.sort();
     }
 }
 
@@ -66,6 +50,11 @@ async function initialize()
     }
 }
 
+function matches(pattern: string, text: string)
+{
+    return globToRegExp(pattern).test(text);
+}
+
 async function openEditor(filePath: string)
 {
     let editor = getOpenedEditor(filePath);
@@ -80,14 +69,33 @@ async function openEditor(filePath: string)
     return editor;
 }
 
-async function organize(sourceCodeFilePath: string, configuration: Configuration): Promise<boolean>
+async function organize(sourceCodeFilePath: string, configuration: Configuration)
 {
-    if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0)
+    // ensure it's a ts file and the workspace root directory is present
+    if (matches("**/*.ts", sourceCodeFilePath) &&
+        vscode.workspace.workspaceFolders &&
+        vscode.workspace.workspaceFolders.length > 0)
     {
-        const sourceCodeDirectoryPath = getDirectoryPath(getFullPath(vscode.workspace.workspaceFolders[0].uri.fsPath));
-        const filePaths = await getFilePaths(sourceCodeDirectoryPath, configuration, sourceCodeFilePath);
+        const sourceCodeDirectoryPath = getFullPath(vscode.workspace.workspaceFolders[0].uri.fsPath);
+        const sourceCodeFilePathRelative = getRelativePath(sourceCodeDirectoryPath, sourceCodeFilePath);
 
-        if (filePaths.length === 1)
+        // test for include or exclude patterns
+        let include = true;
+        let exclude = false;
+
+        if (configuration.files.include.length > 0)
+        {
+            include = configuration.files.include.some(inc => matches(inc, sourceCodeFilePathRelative) ||
+                matches(inc, "./" + sourceCodeFilePathRelative));
+        }
+
+        if (configuration.files.exclude.length > 0)
+        {
+            exclude = configuration.files.exclude.some(exc => matches(exc, sourceCodeFilePathRelative) ||
+                matches(exc, "./" + sourceCodeFilePathRelative));
+        }
+
+        if (include && !exclude)
         {
             let editor = await getOpenedEditor(sourceCodeFilePath);
             const sourceCode = editor ? editor.document.getText() : await readFile(sourceCodeFilePath);
