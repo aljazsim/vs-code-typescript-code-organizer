@@ -262,7 +262,7 @@ export function activate(context: vscode.ExtensionContext)
 
 // #endregion Exported Functions
 
-// #region Variables (4)
+// #region Variables (3)
 
 const output = vscode.window.createOutputChannel("tsco");
 
