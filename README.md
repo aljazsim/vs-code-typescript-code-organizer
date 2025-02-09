@@ -67,7 +67,7 @@ or
 
 If you have issues with TSCO, like not using the correct configuration file, you can use tye output window to investigate issues:
 
-![Debugging](./doc/create_configuration_command.png "Debugging")
+![Debugging](./doc/debugging.png "Debugging")
 
 ## Using TypeScript Code Organizer in command line
 
