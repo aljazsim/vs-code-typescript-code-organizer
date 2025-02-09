@@ -2,7 +2,7 @@
     "name": "tsco",
     "displayName": "TypeScript Code Organizer",
     "description": "TypeScript Code Organizer for VS Code",
-    "version": "2.0.6",
+    "version": "2.0.7",
     "publisher": "aljazsim",
     "author": {
         "name": "aljazsim",
@@ -51,6 +51,11 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Source code will get organized automatically on file saved."
+                },
+                "tsco.configurationFilePath": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Location of tsco.json. Can be absolute file path or relative to the workspace root. If configuration file path isn't specified, default configuration will be used."
                 }
             }
         },
