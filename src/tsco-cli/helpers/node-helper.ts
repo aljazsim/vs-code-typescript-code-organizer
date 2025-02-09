@@ -40,7 +40,7 @@ function sortBy<T extends ElementNode>(nodes: T[], sortDirection: string, groupW
 
 // #endregion Functions
 
-// #region Exported Functions (31)
+// #region Exported Functions (30)
 
 export function getAccessModifier(node: ts.PropertyDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration | ts.MethodDeclaration | ts.PropertySignature | ts.IndexSignatureDeclaration)
 {
@@ -129,11 +129,6 @@ export function getFunctions(nodes: ElementNode[], treatArrowFunctionVariablesAs
     return functions.concat(arrowFunctionVariables).concat(arrowFunctionConstants).sort((a, b) => compareStrings(getName(a, false), getName(b, false)));
 }
 
-export function getHasLeadingComment(node: ts.Node, sourceFile: ts.SourceFile)
-{
-    return ts.getLeadingCommentRanges(node.getFullText(sourceFile), 0) !== undefined;
-}
-
 export function getImports(nodes: ElementNode[])
 {
     return nodes.filter(n => n instanceof ImportNode);
@@ -210,11 +205,11 @@ export function getLeadingComment(node: ts.Node, sourceFile: ts.SourceFile)
         const end = commentRanges[0].end;
         const trailingNewLine = commentRanges[0].hasTrailingNewLine;
 
-        return sourceCode.substring(start, end) + (trailingNewLine ? "\r\n" : "");
+        return sourceCode.substring(start, end).trimStart() + (trailingNewLine ? "\r\n" : "");
     }
     else
     {
-        return "";
+        return null;
     }
 }
 
@@ -311,11 +306,11 @@ export function getTrailingComment(node: ts.Node, sourceFile: ts.SourceFile)
         const end = commentRanges[0].end;
         const trailingNewLine = commentRanges[0].hasTrailingNewLine;
 
-        return sourceCode.substring(start, end) + (trailingNewLine ? "\r\n" : "");
+        return sourceCode.substring(start, end).trimEnd() + (trailingNewLine ? "\r\n" : "");
     }
     else
     {
-        return "";
+        return null;
     }
 }
 

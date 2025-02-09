@@ -2,7 +2,8 @@ import * as ts from "typescript";
 
 import { ClassConfiguration } from "../configuration/class-configuration";
 import { ClassMemberType } from "../enums/class-member-type";
-import { getDecorators, getIsAbstract, getIsStatic, isPrivate, isProtected, isPublic, isReadOnly, isWritable, order } from "../helpers/node-helper";
+import { WriteModifier } from "../enums/write-modifier";
+import { getDecorators, getDependencies, getIsAbstract, getIsStatic, isPrivate, isProtected, isPublic, isReadOnly, isWritable, order } from "../helpers/node-helper";
 import { AccessorNode } from "./accessor-node";
 import { ConstructorNode } from "./constructor-node";
 import { ElementNode } from "./element-node";
@@ -15,11 +16,12 @@ import { StaticBlockDeclarationNode } from "./static-block-declaration-node";
 
 export class ClassNode extends ElementNode
 {
-    // #region Properties (13)
+    // #region Properties (14)
 
     public readonly accessors: AccessorNode[] = [];
     public readonly constructors: ConstructorNode[] = [];
     public readonly decorators: string[];
+    public readonly dependencies: string[] = [];
     public readonly getters: GetterNode[] = [];
     public readonly isAbstract: boolean;
     public readonly isStatic: boolean;
@@ -35,7 +37,7 @@ export class ClassNode extends ElementNode
 
     // #region Constructors (1)
 
-    constructor(sourceFile: ts.SourceFile, classDeclaration: ts.ClassDeclaration, treatArrowFunctionPropertiesAsMethods: boolean)
+    constructor(sourceFile: ts.SourceFile, classDeclaration: ts.ClassDeclaration, treatArrowFunctionPropertiesAsMethods: boolean, treatArrowFunctionReadOnlyPropertiesAsMethods: boolean)
     {
         super(sourceFile, classDeclaration);
 
@@ -69,13 +71,16 @@ export class ClassNode extends ElementNode
             }
             else if (ts.isPropertyDeclaration(member))
             {
-                if (treatArrowFunctionPropertiesAsMethods && member.initializer?.kind === ts.SyntaxKind.ArrowFunction)
+                const property = new PropertyNode(sourceFile, member);
+
+                if (treatArrowFunctionPropertiesAsMethods && property.isArrowFunction && property.writeMode == WriteModifier.writable ||
+                    treatArrowFunctionReadOnlyPropertiesAsMethods && property.isArrowFunction && property.writeMode == WriteModifier.readOnly)
                 {
-                    this.methods.push(new PropertyNode(sourceFile, member));
+                    this.methods.push(property);
                 }
                 else
                 {
-                    this.properties.push(new PropertyNode(sourceFile, member));
+                    this.properties.push(property);
                 }
             }
             else if (ts.isGetAccessorDeclaration(member))
@@ -89,6 +94,18 @@ export class ClassNode extends ElementNode
             else if (ts.isMethodDeclaration(member))
             {
                 this.methods.push(new MethodNode(sourceFile, member));
+            }
+        }
+
+        if (classDeclaration.modifiers)
+        {
+            // check if there's and dependencies on properties within decorators
+            for (const decorator of classDeclaration.modifiers.filter(m => ts.isDecorator(m)))
+            {
+                for (const dependency of getDependencies(sourceFile, decorator, []))
+                {
+                    this.dependencies.push(dependency);
+                }
             }
         }
     }

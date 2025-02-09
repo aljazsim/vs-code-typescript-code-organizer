@@ -11,7 +11,7 @@ export class ImportNode extends ElementNode
 
     public isModuleReference = false;
     public nameBinding: string | null = null;
-    public namedImports: string[] | null = null;
+    public namedImports: { type: boolean, name: string, alias: string | null }[] | null = null;
     public namespace: string | null = null;
     public source: string;
 
@@ -30,6 +30,7 @@ export class ImportNode extends ElementNode
 
         const isRelativeReference = this.source.startsWith(".") || this.source.startsWith("..");
         const isAbsoluteReference = !isRelativeReference && (this.source.indexOf("/") > -1 || this.source.indexOf("\\") > -1);
+
         this.isModuleReference = !isRelativeReference && !isAbsoluteReference;
     }
 
@@ -58,7 +59,12 @@ export class ImportNode extends ElementNode
                 }
                 else if (ts.isNamedImports(node.importClause?.namedBindings))
                 {
-                    this.namedImports = distinct(node.importClause?.namedBindings.elements.map(e => e.name.text.trim()));
+                    this.namedImports = distinct(node.importClause?.namedBindings.elements.map(e => (
+                        {
+                            type: e.isTypeOnly,
+                            name: e.name.text.trim(),
+                            alias: e.propertyName?.text.trim() ?? null
+                        })));
                 }
             }
 

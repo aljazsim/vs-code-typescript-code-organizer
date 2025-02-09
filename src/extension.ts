@@ -1,25 +1,67 @@
 import globToRegExp from "glob-to-regexp";
 import * as vscode from "vscode";
 
-import { VscodeConfiguration } from "./configuration/vscode-configuration";
+import { Settings } from "./settings/settings";
 import { Configuration } from "./tsco-cli/configuration/configuration";
-import { fileExists, getFullPath, getRelativePath, joinPath, readFile, writeFile } from "./tsco-cli/helpers/file-system-helper";
+import { fileExists, getDirectoryPath, getFullPath, getRelativePath, joinPath, readFile, writeFile } from "./tsco-cli/helpers/file-system-helper";
 import { SourceCodeOrganizer } from "./tsco-cli/source-code/source-code-organizer";
 
-// #region Functions (7)
+// #region Functions (10)
 
-async function getConfiguration()
+async function getConfiguration(configurationFilePath: string | null)
 {
-    const files = await vscode.workspace.findFiles("**/tsco.json");
+    if (configurationFilePath)
+    {
+        if (await fileExists(configurationFilePath))
+        {
+            output.appendLine(`tsco using configuration file ${configurationFilePath}`);
 
-    if (files && files.length == 1)
-    {
-        return await Configuration.getConfiguration(getFullPath(files[0].fsPath));
+            // absolute configuration file path from settings
+            return await Configuration.getConfiguration(configurationFilePath);
+        }
+        else if (await fileExists(joinPath(getWorkspaceRootDirectoryPath(), configurationFilePath)))
+        {
+            output.appendLine(`tsco using configuration file ${joinPath(getWorkspaceRootDirectoryPath(), configurationFilePath)}`);
+
+            // relative configuration file path from settings
+            return await Configuration.getConfiguration(joinPath(getWorkspaceRootDirectoryPath(), configurationFilePath));
+        }
+        else
+        {
+            output.appendLine(`tsco configuration file ${getFullPath(configurationFilePath)} not found`);
+        }
     }
-    else
+
+    let workspaceRootDirectoryPath = getWorkspaceRootDirectoryPath();
+
+    configurationFilePath = joinPath(workspaceRootDirectoryPath, "tsco.json");
+
+    if (await fileExists(configurationFilePath))
     {
-        return Configuration.getDefaultConfiguration();
+        output.appendLine(`tsco using configuration file ${configurationFilePath}`);
+
+        // look in workspace root
+        return await Configuration.getConfiguration(configurationFilePath);
     }
+
+    // go one folder up to see if there's a configuration file
+    while (workspaceRootDirectoryPath != getDirectoryPath(workspaceRootDirectoryPath))
+    {
+        workspaceRootDirectoryPath = getDirectoryPath(workspaceRootDirectoryPath);
+        configurationFilePath = joinPath(workspaceRootDirectoryPath, "tsco.json");
+
+        if (await fileExists(configurationFilePath))
+        {
+            output.appendLine(`tsco using configuration file ${configurationFilePath}`);
+
+            return await Configuration.getConfiguration(configurationFilePath);
+        }
+    }
+
+    output.appendLine("tsco using default configuration");
+
+    // default configuration
+    return Configuration.getDefaultConfiguration();
 }
 
 function getOpenedEditor(filePath: string)
@@ -27,7 +69,23 @@ function getOpenedEditor(filePath: string)
     return vscode.window.visibleTextEditors.find(e => getFullPath(e.document.uri.fsPath).toLowerCase() === getFullPath(filePath).toLowerCase());
 }
 
-async function initialize()
+function getWorkspaceRootDirectoryPath()
+{
+    if (vscode.workspace.workspaceFolders &&
+        vscode.workspace.workspaceFolders.length > 0)
+    {
+        return getFullPath(vscode.workspace.workspaceFolders[0].uri.fsPath)
+    }
+
+    return getFullPath("./");
+}
+
+function matches(pattern: string, text: string)
+{
+    return globToRegExp(pattern).test(text);
+}
+
+async function onInitialize()
 {
     if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0)
     {
@@ -50,79 +108,25 @@ async function initialize()
     }
 }
 
-function matches(pattern: string, text: string)
+async function onOrganize(sourceCodeFilePath: string | undefined | null)
 {
-    return globToRegExp(pattern).test(text);
-}
-
-async function openEditor(filePath: string)
-{
-    let editor = getOpenedEditor(filePath);
-
-    if (!editor)
+    if (sourceCodeFilePath)
     {
-        const document = await vscode.workspace.openTextDocument(filePath);
+        sourceCodeFilePath = getFullPath(sourceCodeFilePath);
 
-        editor = await vscode.window.showTextDocument(document);
-    }
-
-    return editor;
-}
-
-async function organize(sourceCodeFilePath: string, configuration: Configuration)
-{
-    // ensure it's a ts file and the workspace root directory is present
-    if (matches("**/*.ts", sourceCodeFilePath) &&
-        vscode.workspace.workspaceFolders &&
-        vscode.workspace.workspaceFolders.length > 0)
-    {
-        const sourceCodeDirectoryPath = getFullPath(vscode.workspace.workspaceFolders[0].uri.fsPath);
-        const sourceCodeFilePathRelative = getRelativePath(sourceCodeDirectoryPath, sourceCodeFilePath);
-
-        // test for include or exclude patterns
-        let include = true;
-        let exclude = false;
-
-        if (configuration.files.include.length > 0)
+        if (matches("**/*.ts", sourceCodeFilePath) && await fileExists(sourceCodeFilePath))
         {
-            include = configuration.files.include.some(inc => matches(inc, sourceCodeFilePathRelative) ||
-                matches(inc, "./" + sourceCodeFilePathRelative));
-        }
-
-        if (configuration.files.exclude.length > 0)
-        {
-            exclude = configuration.files.exclude.some(exc => matches(exc, sourceCodeFilePathRelative) ||
-                matches(exc, "./" + sourceCodeFilePathRelative));
-        }
-
-        if (include && !exclude)
-        {
-            let editor = await getOpenedEditor(sourceCodeFilePath);
-            const sourceCode = editor ? editor.document.getText() : await readFile(sourceCodeFilePath);
-            const organizedSourceCode = await SourceCodeOrganizer.organizeSourceCode(sourceCodeFilePath, sourceCode, configuration);
-
-            if (organizedSourceCode !== sourceCode)
-            {
-                editor ??= await openEditor(sourceCodeFilePath);
-                const start = new vscode.Position(0, 0);
-                const end = new vscode.Position(editor.document.lineCount, editor.document.lineAt(editor.document.lineCount - 1).text.length);
-                const range = new vscode.Range(start, end);
-                const edit = new vscode.WorkspaceEdit();
-
-                edit.replace(editor.document.uri, range, organizedSourceCode);
-
-                await vscode.workspace.applyEdit(edit);
-
-                return true;
-            }
+            return await organize(sourceCodeFilePath, await getConfiguration(settings.configurationFilePath))
         }
     }
 
     return false;
 }
 
-async function organizeAll(configuration: Configuration)
+async function onOrganizeAll()
 {
+    const configuration = await getConfiguration(settings.configurationFilePath);
+
     let files = 0;
     let organized = 0;
 
@@ -146,24 +150,121 @@ async function organizeAll(configuration: Configuration)
     }
 }
 
+async function onSave(sourceCodeFilePath: string)
+{
+    if (settings.organizeOnSave)
+    {
+        const editor = vscode.window.visibleTextEditors.find(ed => ed.document.uri.fsPath === sourceCodeFilePath);
+
+        if (editor)
+        {
+            if (await onOrganize(sourceCodeFilePath))
+            {
+                savingHandler.dispose();
+
+                await editor.document.save();
+
+                savingHandler = vscode.workspace.onWillSaveTextDocument(async (e) => await onSave(e.document.uri.fsPath));
+            }
+        }
+    }
+}
+
+async function openEditor(filePath: string)
+{
+    let editor = getOpenedEditor(filePath);
+
+    if (!editor)
+    {
+        const document = await vscode.workspace.openTextDocument(filePath);
+
+        editor = await vscode.window.showTextDocument(document);
+    }
+
+    return editor;
+}
+
+async function organize(sourceCodeFilePath: string, configuration: Configuration)
+{
+    const workspaceRootDirectoryPath = getWorkspaceRootDirectoryPath();
+    const sourceCodeDirectoryPath = workspaceRootDirectoryPath;
+    const sourceCodeFilePathRelative = getRelativePath(sourceCodeDirectoryPath, sourceCodeFilePath);
+
+    // test for include or exclude patterns
+    let include = true;
+    let exclude = false;
+
+    if (configuration.files.include.length > 0)
+    {
+        include = configuration.files.include.some(inc => matches(inc, sourceCodeFilePathRelative) || matches(inc, "./" + sourceCodeFilePathRelative));
+    }
+
+    if (configuration.files.exclude.length > 0)
+    {
+        exclude = configuration.files.exclude.some(exc => matches(exc, sourceCodeFilePathRelative) || matches(exc, "./" + sourceCodeFilePathRelative));
+    }
+
+    if (include && !exclude)
+    {
+        // organize and save
+        let editor = await getOpenedEditor(sourceCodeFilePath);
+        const sourceCode = editor ? editor.document.getText() : await readFile(sourceCodeFilePath);
+        const organizedSourceCode = await SourceCodeOrganizer.organizeSourceCode(sourceCodeFilePath, sourceCode, configuration);
+
+        if (organizedSourceCode !== sourceCode)
+        {
+            editor ??= await openEditor(sourceCodeFilePath);
+            const start = new vscode.Position(0, 0);
+            const end = new vscode.Position(editor.document.lineCount, editor.document.lineAt(editor.document.lineCount - 1).text.length);
+            const range = new vscode.Range(start, end);
+            const edit = new vscode.WorkspaceEdit();
+
+            edit.replace(editor.document.uri, range, organizedSourceCode);
+
+            await vscode.workspace.applyEdit(edit);
+
+            output.appendLine(`tsco organized ${sourceCodeFilePath}`);
+
+            return true;
+        }
+        else
+        {
+            output.appendLine(`tsco skipping organizing ${sourceCodeFilePath}, because it is already organized`);
+        }
+    }
+    else if (!include)
+    {
+        output.appendLine(`tsco skipping organizing ${sourceCodeFilePath}, because it does not match file include patterns`);
+    }
+    else if (exclude)
+    {
+        output.appendLine(`tsco skipping organizing ${sourceCodeFilePath}, because it matches file exclude patterns`);
+    }
+
+    return false;
+}
+
 // #endregion Functions
 
 // #region Exported Functions (1)
 
 export function activate(context: vscode.ExtensionContext)
 {
-    context.subscriptions.push(vscode.commands.registerCommand('tsco.initialize', async () => await initialize()));
-    context.subscriptions.push(vscode.commands.registerCommand('tsco.organize', async () => vscode.window.activeTextEditor?.document.uri.fsPath && await organize(getFullPath(vscode.window.activeTextEditor!.document.uri.fsPath), await getConfiguration())));
-    context.subscriptions.push(vscode.commands.registerCommand('tsco.organizeAll', async () => await organizeAll(await getConfiguration())));
+    context.subscriptions.push(vscode.commands.registerCommand('tsco.initialize', async () => await onInitialize()));
+    context.subscriptions.push(vscode.commands.registerCommand('tsco.organize', async () => await onOrganize(vscode.window.activeTextEditor?.document.uri.fsPath)));
+    context.subscriptions.push(vscode.commands.registerCommand('tsco.organizeAll', async () => await onOrganizeAll()));
 
-    vscode.workspace.onDidChangeConfiguration(() => configuration = VscodeConfiguration.getConfiguration());
-    vscode.workspace.onWillSaveTextDocument(async (e) => configuration.organizeOnSave && await organize(getFullPath(e.document.uri.fsPath), await getConfiguration()));
+    vscode.workspace.onDidChangeConfiguration(() => settings = Settings.getSettings());
+    savingHandler = vscode.workspace.onWillSaveTextDocument(async (e) => await onSave(e.document.uri.fsPath));
 }
 
 // #endregion Exported Functions
 
-// #region Variables (1)
+// #region Variables (3)
 
-let configuration = VscodeConfiguration.getConfiguration();
+const output = vscode.window.createOutputChannel("tsco");
+
+let savingHandler: vscode.Disposable;
+let settings = Settings.getSettings();
 
 // #endregion Variables
