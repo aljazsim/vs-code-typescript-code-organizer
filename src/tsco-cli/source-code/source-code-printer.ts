@@ -2,8 +2,8 @@ import { Configuration } from "../configuration/configuration";
 import { ImportConfiguration } from "../configuration/import-configuration";
 import { AccessorNode } from "../elements/accessor-node";
 import { ClassNode } from "../elements/class-node";
-import { ElementNodeGroup } from "../elements/element-node-group";
 import { ElementNode } from "../elements/element-node";
+import { ElementNodeGroup } from "../elements/element-node-group";
 import { FunctionNode } from "../elements/function-node";
 import { GetterNode } from "../elements/getter-node";
 import { GetterSignatureNode } from "../elements/getter-signature-node";
@@ -244,7 +244,6 @@ export class SourceCodePrinter
 
                 if (index > 0 && !(nodeGroup.nodes[index - 1] instanceof VariableNode))
                 {
-
                     // separate variables from non-variables with an additional empty line
                     nodeSourceCode.addNewLineBefore();
                 }
