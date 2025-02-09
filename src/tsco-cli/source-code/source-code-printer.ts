@@ -6,6 +6,7 @@ import { ElementNode } from "../elements/element-node";
 import { ElementNodeGroup } from "../elements/element-node-group";
 import { FunctionNode } from "../elements/function-node";
 import { GetterNode } from "../elements/getter-node";
+import { GetterSignatureNode } from "../elements/getter-signature-node";
 import { ImportNode } from "../elements/import-node";
 import { IndexSignatureNode } from "../elements/index-signature-node";
 import { InterfaceNode } from "../elements/interface-node";
@@ -14,9 +15,11 @@ import { MethodSignatureNode } from "../elements/method-signature-node";
 import { PropertyNode } from "../elements/property-node";
 import { PropertySignatureNode } from "../elements/property-signature-node";
 import { SetterNode } from "../elements/setter-node";
+import { SetterSignatureNode } from "../elements/setter-signature-node";
 import { TypeAliasNode } from "../elements/type-alias-node";
 import { VariableNode } from "../elements/variable-node";
 import { ImportSourceFilePathQuoteType } from "../enums/Import-source-file-path-quote-type";
+import { WriteModifier } from "../enums/write-modifier";
 import { SourceCode } from "./source-code";
 
 export class SourceCodePrinter
@@ -85,37 +88,45 @@ export class SourceCodePrinter
     {
         const source = node.source;
         const quote = configuration.quote === ImportSourceFilePathQuoteType.Single ? "'" : '"';
-        const namedImports = (node.namedImports ?? []).filter(ni => ni && ni.trim().length > 0);
+        const namedImports = (node.namedImports ?? []).filter(ni => ni && ni.name.trim().length > 0);
         const nameBinding = node.nameBinding;
         const namespace = node.namespace;
+        let sourceCode = ""
 
         if (nameBinding)
         {
             if (namespace)
             {
-                return new SourceCode(`import ${nameBinding}, * as ${namespace} from ${quote}${source}${quote};`);
+                sourceCode = `import ${nameBinding}, * as ${namespace} from ${quote}${source}${quote};`;
             }
             else if (namedImports.length > 0)
             {
-                return new SourceCode(`import ${nameBinding}, { ${namedImports.join(", ")} } from ${quote}${source}${quote};`);
+                sourceCode = `import ${nameBinding}, { ${namedImports.map(ni => (ni.type ? "type " : "") + (ni.alias ? (ni.alias + " as ") : "") + ni.name).join(", ")} } from ${quote}${source}${quote};`;
             }
             else
             {
-                return new SourceCode(`import ${nameBinding} from ${quote}${source}${quote};`);
+                sourceCode = `import ${nameBinding} from ${quote}${source}${quote};`;
             }
         }
         else if (namespace)
         {
-            return new SourceCode(`import * as ${namespace} from ${quote}${source}${quote};`);
+            sourceCode = `import * as ${namespace} from ${quote}${source}${quote};`;
         }
         else if (namedImports.length > 0)
         {
-            return new SourceCode(`import { ${namedImports.join(", ")} } from ${quote}${source}${quote};`);
+            sourceCode = `import { ${namedImports.map(ni => (ni.type ? "type " : "") + (ni.alias ? (ni.alias + " as ") : "") + ni.name).join(", ")} } from ${quote}${source}${quote};`;
         }
         else
         {
-            return new SourceCode(`import ${quote}${source}${quote};`);
+            sourceCode = `import ${quote}${source}${quote};`;
         }
+
+        if (node.leadingComment)
+        {
+            sourceCode = node.leadingComment + sourceCode;
+        }
+
+        return new SourceCode(sourceCode);
     }
 
     private static printInterface(node: InterfaceNode, configuration: Configuration)
@@ -194,12 +205,14 @@ export class SourceCodePrinter
         {
             const nodeSourceCode = this.printNode(node, configuration);
 
-            if ((node instanceof PropertySignatureNode && node.hasLeadingComment) ||
-                (node instanceof IndexSignatureNode && node.hasLeadingComment) ||
-                (node instanceof MethodSignatureNode && node.hasLeadingComment) ||
-                (node instanceof PropertyNode && node.hasLeadingComment) ||
-                (node instanceof AccessorNode && node.hasLeadingComment) ||
-                (node instanceof VariableNode && node.leadingComment.length > 0))
+            if ((node instanceof PropertySignatureNode && node.leadingComment) ||
+                (node instanceof IndexSignatureNode && node.leadingComment) ||
+                (node instanceof GetterSignatureNode && node.leadingComment) ||
+                (node instanceof SetterSignatureNode && node.leadingComment) ||
+                (node instanceof MethodSignatureNode && node.leadingComment) ||
+                (node instanceof PropertyNode && node.leadingComment) ||
+                (node instanceof AccessorNode && node.leadingComment) ||
+                (node instanceof VariableNode && node.leadingComment))
             {
                 if (nodeGroup.nodes.indexOf(node) > 0)
                 {
@@ -214,12 +227,14 @@ export class SourceCodePrinter
                 node instanceof GetterNode ||
                 node instanceof SetterNode ||
                 node instanceof FunctionNode ||
-                node instanceof MethodNode)
+                node instanceof MethodNode ||
+                (node instanceof PropertyNode && node.writeMode !== WriteModifier.readOnly && node.isArrowFunction && configuration.classes.members.treatArrowFunctionPropertiesAsMethods) ||
+                (node instanceof PropertyNode && node.writeMode === WriteModifier.readOnly && node.isArrowFunction && configuration.classes.members.treatArrowFunctionReadOnlyPropertiesAsMethods))
             {
-                if (nodeGroup.nodes.indexOf(node) < nodeGroup.nodes.length - 1)
+                if (nodeGroup.nodes.indexOf(node) > 0)
                 {
-                    // separate elements that end with '}' with an additional empty line
-                    nodeSourceCode.addNewLineAfter();
+                    // separate elements with an additional empty line
+                    nodeSourceCode.addNewLineBefore();
                 }
             }
 
@@ -244,14 +259,16 @@ export class SourceCodePrinter
         {
             if (nodeGroup.getNodeCount() > 0)
             {
-                nodeGroupsSourceCode.add(this.printNodeGroup(nodeGroup, configuration));
+                const sourceCode = this.printNodeGroup(nodeGroup, configuration);
 
                 if (nodeGroupsWithNodes.length > 1 &&
-                    nodeGroupsWithNodes.indexOf(nodeGroup) < nodeGroupsWithNodes.length - 1)
+                    nodeGroupsWithNodes.indexOf(nodeGroup) > 0)
                 {
-                    // add empty line after non-last node group end
-                    nodeGroupsSourceCode.addNewLineAfter();
+                    // add empty line before non-first group
+                    sourceCode.addNewLineBefore();
                 }
+
+                nodeGroupsSourceCode.add(sourceCode);
             }
         }
 
@@ -303,8 +320,8 @@ export class SourceCodePrinter
 
         sourceCode = `${node.isConst ? "const" : "let"} ${sourceCode};`;
         sourceCode = `${node.isExport ? "export " : ""}${sourceCode}`;
-        sourceCode = `${node.leadingComment}${sourceCode}`;
-        sourceCode = `${sourceCode}${node.trailingComment}`;
+        sourceCode = `${node.leadingComment ?? ""}${sourceCode}`;
+        sourceCode = `${sourceCode}${node.trailingComment ?? ""}`;
 
         return new SourceCode(sourceCode);
     }

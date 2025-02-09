@@ -5,24 +5,24 @@ import { InterfaceMemberType } from "../enums/interface-member-type";
 import { isReadOnly, isWritable, order } from "../helpers/node-helper";
 import { ElementNode } from "./element-node";
 import { ElementNodeGroup } from "./element-node-group";
-import { GetterNode } from "./getter-node";
+import { GetterSignatureNode } from "./getter-signature-node";
 import { IndexSignatureNode } from "./index-signature-node";
 import { MethodSignatureNode } from "./method-signature-node";
 import { PropertySignatureNode } from "./property-signature-node";
-import { SetterNode } from "./setter-node";
+import { SetterSignatureNode } from "./setter-signature-node";
 
 export class InterfaceNode extends ElementNode
 {
     // #region Properties (8)
 
-    public readonly getters: GetterNode[] = [];
+    public readonly getters: GetterSignatureNode[] = [];
     public readonly indexes: IndexSignatureNode[] = [];
     public readonly membersEnd: number = 0;
     public readonly membersStart: number = 0;
     public readonly methods: (MethodSignatureNode | PropertySignatureNode)[] = [];
     public readonly name: string;
     public readonly properties: PropertySignatureNode[] = [];
-    public readonly setters: SetterNode[] = [];
+    public readonly setters: SetterSignatureNode[] = [];
 
     // #endregion Properties
 
@@ -58,11 +58,11 @@ export class InterfaceNode extends ElementNode
             }
             else if (ts.isGetAccessorDeclaration(member))
             {
-                this.getters.push(new GetterNode(sourceFile, member));
+                this.getters.push(new GetterSignatureNode(sourceFile, member));
             }
             else if (ts.isSetAccessorDeclaration(member))
             {
-                this.setters.push(new SetterNode(sourceFile, member));
+                this.setters.push(new SetterSignatureNode(sourceFile, member));
             }
             else if (ts.isIndexSignatureDeclaration(member))
             {

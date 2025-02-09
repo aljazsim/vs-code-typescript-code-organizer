@@ -53,6 +53,8 @@ export class Configuration
             if (configurationFilePath && await fileExists(configurationFilePath))
             {
                 configuration = JSON.parse(await readFile(configurationFilePath));
+
+                console.log(`tsco using configuration ${configurationFilePath}`);
             }
             else
             {

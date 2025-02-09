@@ -86,17 +86,14 @@ export async function writeFile(filePath: string, fileContents: string, overwrit
         if (overwriteFile)
         {
             await deleteFile(filePath);
-            await fs.promises.writeFile(filePath, fileContents, "utf8");
         }
         else
         {
             throw new Error(`There is an existing file at "${filePath}.`);
         }
     }
-    else
-    {
-        await fs.promises.writeFile(filePath, fileContents, "utf8");
-    }
+
+    await fs.promises.writeFile(filePath, fileContents, "utf8");
 }
 
 // #endregion Exported Functions

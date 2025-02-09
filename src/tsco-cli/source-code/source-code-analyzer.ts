@@ -84,7 +84,7 @@ export class SourceCodeAnalyzer
         else if (ts.isClassDeclaration(node))
         {
             // class
-            elements.push(new ClassNode(sourceFile, node, configuration.classes.members.treatArrowFunctionPropertiesAsMethods));
+            elements.push(new ClassNode(sourceFile, node, configuration.classes.members.treatArrowFunctionPropertiesAsMethods, configuration.classes.members.treatArrowFunctionReadOnlyPropertiesAsMethods));
         }
         else if (ts.isEnumDeclaration(node))
         {
