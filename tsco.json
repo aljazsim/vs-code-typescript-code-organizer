@@ -1,13 +1,7 @@
 {
     "files": {
         "include": ["./**/*.ts"],
-        "exclude": [
-            "./**/*.d.ts",
-            "node_modules/**",
-            "dist/**",
-            "out/**",
-            "test/**/ts-files/**"
-        ]
+        "exclude": ["./**/*.d.ts", "node_modules/**", "dist/**", "out/**"]
     },
     "imports": {
         "removeUnusedImports": true,

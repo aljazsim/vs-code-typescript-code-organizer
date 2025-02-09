@@ -196,14 +196,12 @@ async function organize(sourceCodeFilePath: string, configuration: Configuration
 
     if (configuration.files.include.length > 0)
     {
-        include = configuration.files.include.some(inc => matches(inc, sourceCodeFilePathRelative) ||
-            matches(inc, "./" + sourceCodeFilePathRelative));
+        include = configuration.files.include.some(inc => matches(inc, sourceCodeFilePathRelative) || matches(inc, "./" + sourceCodeFilePathRelative));
     }
 
     if (configuration.files.exclude.length > 0)
     {
-        exclude = configuration.files.exclude.some(exc => matches(exc, sourceCodeFilePathRelative) ||
-            matches(exc, "./" + sourceCodeFilePathRelative));
+        exclude = configuration.files.exclude.some(exc => matches(exc, sourceCodeFilePathRelative) || matches(exc, "./" + sourceCodeFilePathRelative));
     }
 
     if (include && !exclude)
