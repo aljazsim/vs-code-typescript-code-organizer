@@ -2,8 +2,8 @@ import { Configuration } from "../configuration/configuration";
 import { ImportConfiguration } from "../configuration/import-configuration";
 import { AccessorNode } from "../elements/accessor-node";
 import { ClassNode } from "../elements/class-node";
-import { ElementNode } from "../elements/element-node";
 import { ElementNodeGroup } from "../elements/element-node-group";
+import { ElementNode } from "../elements/element-node";
 import { FunctionNode } from "../elements/function-node";
 import { GetterNode } from "../elements/getter-node";
 import { GetterSignatureNode } from "../elements/getter-signature-node";
@@ -238,6 +238,18 @@ export class SourceCodePrinter
                 }
             }
 
+            if (node instanceof VariableNode)
+            {
+                const index = nodeGroup.nodes.indexOf(node);
+
+                if (index > 0 && !(nodeGroup.nodes[index - 1] instanceof VariableNode))
+                {
+
+                    // separate variables from non-variables with an additional empty line
+                    nodeSourceCode.addNewLineBefore();
+                }
+            }
+
             nodeGroupSourceCode.add(nodeSourceCode);
         }
 
@@ -257,19 +269,16 @@ export class SourceCodePrinter
 
         for (const nodeGroup of nodeGroupsWithNodes)
         {
-            if (nodeGroup.getNodeCount() > 0)
+            const sourceCode = this.printNodeGroup(nodeGroup, configuration);
+
+            if (nodeGroupsWithNodes.length > 1 &&
+                nodeGroupsWithNodes.indexOf(nodeGroup) > 0)
             {
-                const sourceCode = this.printNodeGroup(nodeGroup, configuration);
-
-                if (nodeGroupsWithNodes.length > 1 &&
-                    nodeGroupsWithNodes.indexOf(nodeGroup) > 0)
-                {
-                    // add empty line before non-first group
-                    sourceCode.addNewLineBefore();
-                }
-
-                nodeGroupsSourceCode.add(sourceCode);
+                // add empty line before non-first group
+                sourceCode.addNewLineBefore();
             }
+
+            nodeGroupsSourceCode.add(sourceCode);
         }
 
         return nodeGroupsSourceCode;
