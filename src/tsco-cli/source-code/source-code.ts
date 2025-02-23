@@ -23,23 +23,27 @@ export class SourceCode
 
     // #endregion Constructors
 
-    // #region Public Methods (12)
+    // #region Public Methods (13)
 
-    public add(newSourceCode: string | SourceCode, where: "before" | "after" = "after")
+    public addAfter(newSourceCode: string | SourceCode)
     {
-        if (newSourceCode instanceof SourceCode && where === "after")
+        if (newSourceCode instanceof SourceCode)
         {
             this.sourceCode = this.sourceCode + newSourceCode.toString();
         }
-        else if (newSourceCode instanceof SourceCode && where === "before")
-        {
-            this.sourceCode = newSourceCode.toString() + this.sourceCode;
-        }
-        else if (where === "after")
+        else
         {
             this.sourceCode = this.sourceCode + newSourceCode;
         }
-        else if (where === "before")
+    }
+
+    public addBefore(newSourceCode: string | SourceCode)
+    {
+        if (newSourceCode instanceof SourceCode)
+        {
+            this.sourceCode = newSourceCode.toString() + this.sourceCode;
+        }
+        else
         {
             this.sourceCode = newSourceCode + this.sourceCode;
         }
@@ -53,13 +57,13 @@ export class SourceCode
 
             this.sourceCode = comment.trimEnd();
             this.addNewLineAfter();
-            this.add(temp);
+            this.addAfter(temp);
         }
     }
 
     public addNewLineAfter()
     {
-        this.add(this.newLine);
+        this.addAfter(this.newLine);
     }
 
     public addNewLineAfterIf(condition: boolean)
@@ -72,7 +76,7 @@ export class SourceCode
 
     public addNewLineBefore()
     {
-        this.add(this.newLine, "before");
+        this.addBefore(this.newLine);
     }
 
     public addPrivateModifierIfStartingWithHash(node: PropertyNode | MethodNode | AccessorNode | GetterNode | SetterNode)
@@ -204,9 +208,9 @@ export class SourceCode
         this.sourceCode = region;
         this.addNewLineAfter();
         this.addNewLineAfter();
-        this.add(code);
+        this.addAfter(code);
         this.addNewLineAfter();
-        this.add(endregion);
+        this.addAfter(endregion);
         this.addNewLineAfter();
     }
 

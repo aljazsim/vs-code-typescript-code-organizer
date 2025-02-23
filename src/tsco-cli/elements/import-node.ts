@@ -5,15 +5,16 @@ import { ElementNode } from "./element-node";
 
 export class ImportNode extends ElementNode
 {
-    // #region Properties (6)
+    // #region Properties (7)
 
     public readonly name: string;
 
     public isModuleReference = false;
     public nameBinding: string | null = null;
-    public namedImports: { type: boolean, name: string, alias: string | null }[] | null = null;
+    public namedImports: { typeOnly: boolean, name: string, alias: string | null }[] | null = null;
     public namespace: string | null = null;
     public source: string;
+    public type = false;
 
     // #endregion Properties
 
@@ -29,7 +30,7 @@ export class ImportNode extends ElementNode
         this.source = this.getSource(importDeclaration);
 
         const isRelativeReference = this.source.startsWith(".") || this.source.startsWith("..");
-        const isAbsoluteReference = !isRelativeReference && (this.source.indexOf("/") > -1 || this.source.indexOf("\\") > -1);
+        const isAbsoluteReference = !isRelativeReference && !this.source.startsWith("@") && (this.source.indexOf("/") > -1 || this.source.indexOf("\\") > -1);
 
         this.isModuleReference = !isRelativeReference && !isAbsoluteReference;
     }
@@ -59,9 +60,9 @@ export class ImportNode extends ElementNode
                 }
                 else if (ts.isNamedImports(node.importClause?.namedBindings))
                 {
-                    this.namedImports = distinct(node.importClause?.namedBindings.elements.map(e => (
+                    this.namedImports = distinct(node.importClause!.namedBindings.elements.map(e => (
                         {
-                            type: e.isTypeOnly,
+                            typeOnly: node.importClause!.isTypeOnly || e.isTypeOnly,
                             name: e.name.text.trim(),
                             alias: e.propertyName?.text.trim() ?? null
                         })));

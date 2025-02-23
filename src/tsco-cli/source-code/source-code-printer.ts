@@ -4,6 +4,7 @@ import { AccessorNode } from "../elements/accessor-node";
 import { ClassNode } from "../elements/class-node";
 import { ElementNode } from "../elements/element-node";
 import { ElementNodeGroup } from "../elements/element-node-group";
+import { ExpressionNode } from "../elements/expression-node";
 import { FunctionNode } from "../elements/function-node";
 import { GetterNode } from "../elements/getter-node";
 import { GetterSignatureNode } from "../elements/getter-signature-node";
@@ -70,15 +71,15 @@ export class SourceCodePrinter
 
         if (beforeMembers.length > 0)
         {
-            nodeSourceCode.add(beforeMembers);
+            nodeSourceCode.addAfter(beforeMembers);
             nodeSourceCode.addNewLineAfter();
         }
 
-        nodeSourceCode.add(members);
+        nodeSourceCode.addAfter(members);
 
         if (afterMembers.length > 0)
         {
-            nodeSourceCode.add(afterMembers);
+            nodeSourceCode.addAfter(afterMembers);
         }
 
         return nodeSourceCode;
@@ -92,6 +93,17 @@ export class SourceCodePrinter
         const nameBinding = node.nameBinding;
         const namespace = node.namespace;
         let sourceCode = ""
+        let namedImportsSourceCode = "";
+
+        if (namedImports.length > 0)
+        {
+            const allTypeOnly = namedImports.every(ni => ni.typeOnly);
+
+            namedImportsSourceCode += allTypeOnly ? "type " : "";
+            namedImportsSourceCode += "{ ";
+            namedImportsSourceCode += namedImports.map(ni => (ni.typeOnly && !allTypeOnly ? "type " : "") + (ni.alias ? (ni.alias + " as ") : "") + ni.name).join(", ");
+            namedImportsSourceCode += " }";
+        }
 
         if (nameBinding)
         {
@@ -101,7 +113,7 @@ export class SourceCodePrinter
             }
             else if (namedImports.length > 0)
             {
-                sourceCode = `import ${nameBinding}, { ${namedImports.map(ni => (ni.type ? "type " : "") + (ni.alias ? (ni.alias + " as ") : "") + ni.name).join(", ")} } from ${quote}${source}${quote};`;
+                sourceCode = `import ${nameBinding}, ${namedImportsSourceCode} from ${quote}${source}${quote};`;
             }
             else
             {
@@ -114,7 +126,7 @@ export class SourceCodePrinter
         }
         else if (namedImports.length > 0)
         {
-            sourceCode = `import { ${namedImports.map(ni => (ni.type ? "type " : "") + (ni.alias ? (ni.alias + " as ") : "") + ni.name).join(", ")} } from ${quote}${source}${quote};`;
+            sourceCode = `import ${namedImportsSourceCode} from ${quote}${source}${quote};`;
         }
         else
         {
@@ -138,15 +150,15 @@ export class SourceCodePrinter
 
         if (beforeMembers.length > 0)
         {
-            nodeSourceCode.add(beforeMembers);
+            nodeSourceCode.addAfter(beforeMembers);
             nodeSourceCode.addNewLineAfter();
         }
 
-        nodeSourceCode.add(members);
+        nodeSourceCode.addAfter(members);
 
         if (afterMembers.length > 0)
         {
-            nodeSourceCode.add(afterMembers);
+            nodeSourceCode.addAfter(afterMembers);
         }
 
         return nodeSourceCode;
@@ -198,7 +210,7 @@ export class SourceCodePrinter
         const nodeGroupNodeCount = nodeGroup.getNodeCount();
 
         // print subgroups
-        nodeGroupSourceCode.add(this.printNodeGroups(nodeGroup.nodeSubGroups, configuration));
+        nodeGroupSourceCode.addAfter(this.printNodeGroups(nodeGroup.nodeSubGroups, configuration));
 
         // print nodes within a group
         for (const node of nodeGroup.nodes)
@@ -229,7 +241,8 @@ export class SourceCodePrinter
                 node instanceof FunctionNode ||
                 node instanceof MethodNode ||
                 (node instanceof PropertyNode && node.writeMode !== WriteModifier.readOnly && node.isArrowFunction && configuration.classes.members.treatArrowFunctionPropertiesAsMethods) ||
-                (node instanceof PropertyNode && node.writeMode === WriteModifier.readOnly && node.isArrowFunction && configuration.classes.members.treatArrowFunctionReadOnlyPropertiesAsMethods))
+                (node instanceof PropertyNode && node.writeMode === WriteModifier.readOnly && node.isArrowFunction && configuration.classes.members.treatArrowFunctionReadOnlyPropertiesAsMethods) ||
+                node instanceof ExpressionNode)
             {
                 if (nodeGroup.nodes.indexOf(node) > 0)
                 {
@@ -249,7 +262,7 @@ export class SourceCodePrinter
                 }
             }
 
-            nodeGroupSourceCode.add(nodeSourceCode);
+            nodeGroupSourceCode.addAfter(nodeSourceCode);
         }
 
         if (nodeGroup.isRegion && nodeGroup.regionConfiguration?.addRegions)
@@ -277,7 +290,7 @@ export class SourceCodePrinter
                 sourceCode.addNewLineBefore();
             }
 
-            nodeGroupsSourceCode.add(sourceCode);
+            nodeGroupsSourceCode.addAfter(sourceCode);
         }
 
         return nodeGroupsSourceCode;
@@ -308,15 +321,15 @@ export class SourceCodePrinter
 
         if (beforeMembers.length > 0)
         {
-            nodeSourceCode.add(beforeMembers);
+            nodeSourceCode.addAfter(beforeMembers);
             nodeSourceCode.addNewLineAfter();
         }
 
-        nodeSourceCode.add(members);
+        nodeSourceCode.addAfter(members);
 
         if (afterMembers.length > 0)
         {
-            nodeSourceCode.add(afterMembers);
+            nodeSourceCode.addAfter(afterMembers);
         }
 
         return nodeSourceCode;
