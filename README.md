@@ -206,3 +206,8 @@ See [TypeScript Code Organizer Command Line Interface](https://www.npmjs.com/pac
 - fix issue with import statements with  comments
 - fix issue with sorting members with dependencies
 - fix organizing imports with type aliases
+
+### 2.0.9
+
+- fix issue with removing empty lines in code expressions
+- fix issue with using typed imports

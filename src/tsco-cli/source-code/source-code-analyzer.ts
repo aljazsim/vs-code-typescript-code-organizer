@@ -118,7 +118,7 @@ export class SourceCodeAnalyzer
                 elements = elements.concat(this.traverseSyntaxTree(childNode, sourceFile, configuration));
             }
         }
-        else if (!ts.isEmptyStatement(node))
+        else if (!ts.isEmptyStatement(node) && node.kind != ts.SyntaxKind.EndOfFileToken)
         {
             // expression
             elements.push(new ExpressionNode(sourceFile, node));
