@@ -1,18 +1,18 @@
 import * as ts from "typescript";
 
-import { ClassConfiguration } from "../configuration/class-configuration.js";
-import { ClassMemberType } from "../enums/class-member-type.js";
-import { WriteModifier } from "../enums/write-modifier.js";
-import { getDecorators, getDependencies, getIsAbstract, getIsExport, getIsStatic, isPrivate, isProtected, isPublic, isReadOnly, isWritable, order } from "../helpers/node-helper.js";
-import { AccessorNode } from "./accessor-node.js";
-import { ConstructorNode } from "./constructor-node.js";
-import { ElementNodeGroup } from "./element-node-group.js";
-import { ElementNode } from "./element-node.js";
-import { GetterNode } from "./getter-node.js";
-import { MethodNode } from "./method-node.js";
-import { PropertyNode } from "./property-node.js";
-import { SetterNode } from "./setter-node.js";
-import { StaticBlockDeclarationNode } from "./static-block-declaration-node.js";
+import { ClassConfiguration } from "../configuration/class-configuration";
+import { ClassMemberType } from "../enums/class-member-type";
+import { WriteModifier } from "../enums/write-modifier";
+import { getDecorators, getDependencies, getIsAbstract, getIsExport, getIsStatic, isPrivate, isProtected, isPublic, isReadOnly, isWritable, order } from "../helpers/node-helper";
+import { AccessorNode } from "./accessor-node";
+import { ConstructorNode } from "./constructor-node";
+import { ElementNodeGroup } from "./element-node-group";
+import { ElementNode } from "./element-node";
+import { GetterNode } from "./getter-node";
+import { MethodNode } from "./method-node";
+import { PropertyNode } from "./property-node";
+import { SetterNode } from "./setter-node";
+import { StaticBlockDeclarationNode } from "./static-block-declaration-node";
 
 export class ClassNode extends ElementNode
 {

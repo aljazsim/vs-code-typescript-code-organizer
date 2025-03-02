@@ -1,6 +1,6 @@
 import wcmatch from "wildcard-match";
 
-import { space } from "../source-code/source-code-constants.js";
+import { space } from "../source-code/source-code-constants";
 
 // #region Exported Functions (3)
 

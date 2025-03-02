@@ -1,6 +1,6 @@
 import * as ts from "typescript";
 
-import { getLeadingComment, getTrailingComment } from "../helpers/node-helper.js";
+import { getLeadingComment, getTrailingComment } from "../helpers/node-helper";
 
 export abstract class ElementNode
 {

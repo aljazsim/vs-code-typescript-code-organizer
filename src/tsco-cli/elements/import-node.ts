@@ -1,7 +1,7 @@
 import * as ts from "typescript";
 
-import { distinct } from "../helpers/array-helper.js";
-import { ElementNode } from "./element-node.js";
+import { distinct } from "../helpers/array-helper";
+import { ElementNode } from "./element-node";
 
 export class ImportNode extends ElementNode
 {

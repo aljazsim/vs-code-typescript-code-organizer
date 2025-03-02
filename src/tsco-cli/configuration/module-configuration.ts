@@ -1,6 +1,6 @@
-import { ModuleMemberConfiguration } from "./module-member-configuration.js";
-import { ModuleMemberGroupConfiguration } from "./module-member-group-configuration.js";
-import { RegionConfiguration } from "./region-configuration.js";
+import { ModuleMemberConfiguration } from "./module-member-configuration";
+import { ModuleMemberGroupConfiguration } from "./module-member-group-configuration";
+import { RegionConfiguration } from "./region-configuration";
 
 export class ModuleConfiguration
 {

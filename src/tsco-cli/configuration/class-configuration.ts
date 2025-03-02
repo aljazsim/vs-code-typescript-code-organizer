@@ -1,6 +1,6 @@
-import { ClassMemberConfiguration } from "./class-member-configuration.js";
-import { ClassMemberGroupConfiguration } from "./class-member-group-configuration.js";
-import { RegionConfiguration } from "./region-configuration.js";
+import { ClassMemberConfiguration } from "./class-member-configuration";
+import { ClassMemberGroupConfiguration } from "./class-member-group-configuration";
+import { RegionConfiguration } from "./region-configuration";
 
 export class ClassConfiguration
 {

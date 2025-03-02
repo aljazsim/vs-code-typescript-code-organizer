@@ -1,12 +1,12 @@
-import { RegionConfiguration } from "../configuration/region-configuration.js";
-import { AccessorNode } from "../elements/accessor-node.js";
-import { GetterNode } from "../elements/getter-node.js";
-import { MethodNode } from "../elements/method-node.js";
-import { PropertyNode } from "../elements/property-node.js";
-import { SetterNode } from "../elements/setter-node.js";
-import { AccessModifier } from "../enums/access-modifier.js";
-import { WriteModifier } from "../enums/write-modifier.js";
-import { anythingRegex, endRegion, newLine, newLineRegex, space, spacesRegex, startRegion } from "./source-code-constants.js";
+import { RegionConfiguration } from "../configuration/region-configuration";
+import { AccessorNode } from "../elements/accessor-node";
+import { GetterNode } from "../elements/getter-node";
+import { MethodNode } from "../elements/method-node";
+import { PropertyNode } from "../elements/property-node";
+import { SetterNode } from "../elements/setter-node";
+import { AccessModifier } from "../enums/access-modifier";
+import { WriteModifier } from "../enums/write-modifier";
+import { anythingRegex, endRegion, newLine, newLineRegex, space, spacesRegex, startRegion } from "./source-code-constants";
 
 export class SourceCode
 {
