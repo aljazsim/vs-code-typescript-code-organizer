@@ -1,27 +1,28 @@
-import { ImportSourceFilePathQuoteType } from "../enums/Import-source-file-path-quote-type";
-import { ClassMemberType } from "../enums/class-member-type";
-import { InterfaceMemberType } from "../enums/interface-member-type";
-import { ModuleMemberType } from "../enums/module-member-type";
-import { TypeMemberType } from "../enums/type-member-type";
-import { distinct, remove } from "../helpers/array-helper";
-import { fileExists, readFile } from "../helpers/file-system-helper";
-import { convertPascalCaseToTitleCase } from "../helpers/string-helper";
-import { ClassConfiguration } from "./class-configuration";
-import { ClassMemberConfiguration } from "./class-member-configuration";
-import { ClassMemberGroupConfiguration } from "./class-member-group-configuration";
-import { defaultConfiguration } from "./default-configuration";
-import { FileConfiguration } from "./file-configuration";
-import { ImportConfiguration } from "./import-configuration";
-import { InterfaceConfiguration } from "./interface-configuration";
-import { InterfaceMemberConfiguration } from "./interface-member-configuration";
-import { InterfaceMemberGroupConfiguration } from "./interface-member-group-configuration";
-import { ModuleConfiguration } from "./module-configuration";
-import { ModuleMemberConfiguration } from "./module-member-configuration";
-import { ModuleMemberGroupConfiguration } from "./module-member-group-configuration";
-import { RegionConfiguration } from "./region-configuration";
-import { TypeConfiguration } from "./type-configuration";
-import { TypeMemberConfiguration } from "./type-member-configuration";
-import { TypeMemberGroupConfiguration } from "./type-member-group-configuration";
+import { ClassMemberType } from "../enums/class-member-type.js";
+import { ImportExpand } from "../enums/import-expand.js";
+import { ImportSourceFilePathQuoteType } from "../enums/import-source-file-path-quote-type.js";
+import { InterfaceMemberType } from "../enums/interface-member-type.js";
+import { ModuleMemberType } from "../enums/module-member-type.js";
+import { TypeMemberType } from "../enums/type-member-type.js";
+import { distinct, remove } from "../helpers/array-helper.js";
+import { fileExists, readFile } from "../helpers/file-system-helper.js";
+import { convertPascalCaseToTitleCase } from "../helpers/string-helper.js";
+import { ClassConfiguration } from "./class-configuration.js";
+import { ClassMemberConfiguration } from "./class-member-configuration.js";
+import { ClassMemberGroupConfiguration } from "./class-member-group-configuration.js";
+import { defaultConfiguration } from "./default-configuration.js";
+import { FileConfiguration } from "./file-configuration.js";
+import { ImportConfiguration } from "./import-configuration.js";
+import { InterfaceConfiguration } from "./interface-configuration.js";
+import { InterfaceMemberConfiguration } from "./interface-member-configuration.js";
+import { InterfaceMemberGroupConfiguration } from "./interface-member-group-configuration.js";
+import { ModuleConfiguration } from "./module-configuration.js";
+import { ModuleMemberConfiguration } from "./module-member-configuration.js";
+import { ModuleMemberGroupConfiguration } from "./module-member-group-configuration.js";
+import { RegionConfiguration } from "./region-configuration.js";
+import { TypeConfiguration } from "./type-configuration.js";
+import { TypeMemberConfiguration } from "./type-member-configuration.js";
+import { TypeMemberGroupConfiguration } from "./type-member-group-configuration.js";
 
 export class Configuration
 {
@@ -78,7 +79,8 @@ export class Configuration
                     configuration.imports?.sortImportsByName ?? defaultConfiguration.imports.sortImportsByName,
                     configuration.imports?.groupImportsBySource ?? defaultConfiguration.imports.groupImportsBySource,
                     configuration.imports?.separateImportGroups ?? defaultConfiguration.imports.separateImportGroups,
-                    this.parseImportSourceFilePathQuoteType(configuration.imports?.quote) ?? defaultConfiguration.imports.quote
+                    this.parseImportSourceFilePathQuoteType(configuration.imports?.quote) ?? defaultConfiguration.imports.quote,
+                    this.parseImportExpand(configuration.imports?.expand) ?? defaultConfiguration.imports.expand
                 ),
             new ModuleConfiguration
                 (
@@ -159,7 +161,8 @@ export class Configuration
                     defaultConfiguration.imports.sortImportsByName,
                     defaultConfiguration.imports.groupImportsBySource,
                     defaultConfiguration.imports.separateImportGroups,
-                    this.parseImportSourceFilePathQuoteType(defaultConfiguration.imports.quote) ?? ImportSourceFilePathQuoteType.Double
+                    this.parseImportSourceFilePathQuoteType(defaultConfiguration.imports.quote) ?? ImportSourceFilePathQuoteType.Double,
+                    this.parseImportExpand(defaultConfiguration.imports.expand) ?? ImportExpand.Never
                 ),
             new ModuleConfiguration
                 (
@@ -228,7 +231,7 @@ export class Configuration
 
     // #endregion Public Static Methods
 
-    // #region Private Static Methods (9)
+    // #region Private Static Methods (10)
 
     private static fixClassMemberMemberGroup(defaultMemberTypeOrder: ClassMemberGroupConfiguration[], memberTypeOrder: ClassMemberGroupConfiguration[]): ClassMemberGroupConfiguration[]
     {
@@ -337,6 +340,26 @@ export class Configuration
         }
 
         return new ClassMemberGroupConfiguration(sortDirection, caption, memberTypes, memberTypesGrouped, placeAbove, placeBelow);
+    }
+
+    private static parseImportExpand(importExpand: string)
+    {
+        if (importExpand === ImportExpand.Never)
+        {
+            return ImportExpand.Never;
+        }
+        else if (importExpand === ImportExpand.Always)
+        {
+            return ImportExpand.Always;
+        }
+        else if (importExpand === ImportExpand.WhenMoreThanOneNamedImport)
+        {
+            return ImportExpand.WhenMoreThanOneNamedImport;
+        }
+        else
+        {
+            return null;
+        }
     }
 
     private static parseImportSourceFilePathQuoteType(quoteType: string)

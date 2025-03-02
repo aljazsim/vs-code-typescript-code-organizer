@@ -1,35 +1,42 @@
-import { Configuration } from "../configuration/configuration";
-import { ImportConfiguration } from "../configuration/import-configuration";
-import { AccessorNode } from "../elements/accessor-node";
-import { ClassNode } from "../elements/class-node";
-import { ElementNode } from "../elements/element-node";
-import { ElementNodeGroup } from "../elements/element-node-group";
-import { ExpressionNode } from "../elements/expression-node";
-import { FunctionNode } from "../elements/function-node";
-import { GetterNode } from "../elements/getter-node";
-import { GetterSignatureNode } from "../elements/getter-signature-node";
-import { ImportNode } from "../elements/import-node";
-import { IndexSignatureNode } from "../elements/index-signature-node";
-import { InterfaceNode } from "../elements/interface-node";
-import { MethodNode } from "../elements/method-node";
-import { MethodSignatureNode } from "../elements/method-signature-node";
-import { PropertyNode } from "../elements/property-node";
-import { PropertySignatureNode } from "../elements/property-signature-node";
-import { SetterNode } from "../elements/setter-node";
-import { SetterSignatureNode } from "../elements/setter-signature-node";
-import { TypeAliasNode } from "../elements/type-alias-node";
-import { VariableNode } from "../elements/variable-node";
-import { ImportSourceFilePathQuoteType } from "../enums/Import-source-file-path-quote-type";
-import { WriteModifier } from "../enums/write-modifier";
-import { SourceCode } from "./source-code";
+import { Configuration } from "../configuration/configuration.js";
+import { ImportConfiguration } from "../configuration/import-configuration.js";
+import { AccessorNode } from "../elements/accessor-node.js";
+import { ClassNode } from "../elements/class-node.js";
+import { ElementNodeGroup } from "../elements/element-node-group.js";
+import { ElementNode } from "../elements/element-node.js";
+import { ExpressionNode } from "../elements/expression-node.js";
+import { FunctionNode } from "../elements/function-node.js";
+import { GetterNode } from "../elements/getter-node.js";
+import { GetterSignatureNode } from "../elements/getter-signature-node.js";
+import { ImportNode } from "../elements/import-node.js";
+import { IndexSignatureNode } from "../elements/index-signature-node.js";
+import { InterfaceNode } from "../elements/interface-node.js";
+import { MethodNode } from "../elements/method-node.js";
+import { MethodSignatureNode } from "../elements/method-signature-node.js";
+import { PropertyNode } from "../elements/property-node.js";
+import { PropertySignatureNode } from "../elements/property-signature-node.js";
+import { SetterNode } from "../elements/setter-node.js";
+import { SetterSignatureNode } from "../elements/setter-signature-node.js";
+import { TypeAliasNode } from "../elements/type-alias-node.js";
+import { VariableNode } from "../elements/variable-node.js";
+import { ImportExpand } from "../enums/import-expand.js";
+import { ImportSourceFilePathQuoteType } from "../enums/import-source-file-path-quote-type.js";
+import { WriteModifier } from "../enums/write-modifier.js";
+import { doubleQuote, newLine, newLineRegex, singleQuote, space } from "./source-code-constants.js";
+import { SourceCode } from "./source-code.js";
 
 export class SourceCodePrinter
 {
     // #region Public Static Methods (1)
 
-    public static print(nodeGroups: ElementNodeGroup[], configuration: Configuration)
+    public static print(fileHeader: string | null, nodeGroups: ElementNodeGroup[], configuration: Configuration)
     {
         const printedSourceCode = this.printNodeGroups(nodeGroups, configuration);
+
+        if (fileHeader && fileHeader.length > 0)
+        {
+            printedSourceCode.addBefore(this.printComment(fileHeader));
+        }
 
         printedSourceCode.removeConsecutiveEmptyLines();
         printedSourceCode.trim();
@@ -40,7 +47,7 @@ export class SourceCodePrinter
 
     // #endregion Public Static Methods
 
-    // #region Private Static Methods (9)
+    // #region Private Static Methods (10)
 
     private static printClass(node: ClassNode, configuration: Configuration)
     {
@@ -85,10 +92,53 @@ export class SourceCodePrinter
         return nodeSourceCode;
     }
 
+    private static printComment(fileHeader: string, indentation = "")
+    {
+        const multilineComment = "*";
+        const multilineCommentStart = new RegExp(`^/\\${multilineComment}+$`);
+        const multilineCommentEnd = new RegExp(`^\\${multilineComment}+/$`);
+        const singlelineComment = "//";
+
+        const lines = fileHeader.trimStart().split(new RegExp(newLineRegex)).map(l => l.trim());
+
+        for (let i = 0; i < lines.length; i++)
+        {
+            if (multilineCommentStart.test(lines[i]))
+            {
+                // do nothing
+            }
+            else if (multilineCommentEnd.test(lines[i]))
+            {
+                lines[i] = " " + lines[i].trim();
+            }
+            else if (lines[i].startsWith(multilineComment))
+            {
+                lines[i] = " " + multilineComment + " " + lines[i].substring(multilineComment.length).trim();
+            }
+            else if (lines[i].startsWith(singlelineComment))
+            {
+                lines[i] = singlelineComment + " " + lines[i].substring(singlelineComment.length).trim();
+            }
+
+            if (lines[i] !== "")
+            {
+                lines[i] = indentation + lines[i];
+            }
+        }
+
+        if (lines[lines.length - 1] !== "")
+        {
+            lines.push("");
+        }
+
+        return lines.join(newLine);
+    }
+
     private static printImport(node: ImportNode, configuration: ImportConfiguration)
     {
+        const indentation = "    ";
         const source = node.source;
-        const quote = configuration.quote === ImportSourceFilePathQuoteType.Single ? "'" : '"';
+        const quote = configuration.quote === ImportSourceFilePathQuoteType.Single ? singleQuote : doubleQuote;
         const namedImports = (node.namedImports ?? []).filter(ni => ni && ni.name.trim().length > 0);
         const nameBinding = node.nameBinding;
         const namespace = node.namespace;
@@ -97,12 +147,13 @@ export class SourceCodePrinter
 
         if (namedImports.length > 0)
         {
+            const expand = configuration.expand === ImportExpand.Always || configuration.expand === ImportExpand.WhenMoreThanOneNamedImport && namedImports.length > 1;
             const allTypeOnly = namedImports.every(ni => ni.typeOnly);
 
             namedImportsSourceCode += allTypeOnly ? "type " : "";
-            namedImportsSourceCode += "{ ";
-            namedImportsSourceCode += namedImports.map(ni => (ni.typeOnly && !allTypeOnly ? "type " : "") + (ni.alias ? (ni.alias + " as ") : "") + ni.name).join(", ");
-            namedImportsSourceCode += " }";
+            namedImportsSourceCode += `{${expand ? newLine : space}`;
+            namedImportsSourceCode += namedImports.map(ni => (expand ? indentation : "") + (ni.typeOnly && !allTypeOnly ? "type " : "") + (ni.alias ? (ni.alias + " as ") : "") + ni.name).join(`,${expand ? newLine : space}`);
+            namedImportsSourceCode += `${expand ? newLine : space}}`;
         }
 
         if (nameBinding)
@@ -337,12 +388,15 @@ export class SourceCodePrinter
 
     private static printVariable(node: VariableNode): SourceCode
     {
-        let sourceCode = node.sourceCode.trim();
+        let sourceCode = "";
 
-        sourceCode = `${node.isConst ? "const" : "let"} ${sourceCode};`;
-        sourceCode = `${node.isExport ? "export " : ""}${sourceCode}`;
-        sourceCode = `${node.leadingComment ?? ""}${sourceCode}`;
-        sourceCode = `${sourceCode}${node.trailingComment ?? ""}`;
+        sourceCode += node.leadingComment ?? "";
+        sourceCode += node.isExport ? "export " : "";
+        sourceCode += node.isDeclaration ? "declare " : "";
+        sourceCode += node.isConst ? "const " : "let ";
+        sourceCode += node.sourceCode.trim();
+        sourceCode += ";";
+        sourceCode += node.trailingComment ?? "";
 
         return new SourceCode(sourceCode);
     }

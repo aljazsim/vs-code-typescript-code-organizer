@@ -1,22 +1,22 @@
 import * as ts from "typescript";
 
-import { ClassConfiguration } from "../configuration/class-configuration";
-import { ClassMemberType } from "../enums/class-member-type";
-import { WriteModifier } from "../enums/write-modifier";
-import { getDecorators, getDependencies, getIsAbstract, getIsStatic, isPrivate, isProtected, isPublic, isReadOnly, isWritable, order } from "../helpers/node-helper";
-import { AccessorNode } from "./accessor-node";
-import { ConstructorNode } from "./constructor-node";
-import { ElementNode } from "./element-node";
-import { ElementNodeGroup } from "./element-node-group";
-import { GetterNode } from "./getter-node";
-import { MethodNode } from "./method-node";
-import { PropertyNode } from "./property-node";
-import { SetterNode } from "./setter-node";
-import { StaticBlockDeclarationNode } from "./static-block-declaration-node";
+import { ClassConfiguration } from "../configuration/class-configuration.js";
+import { ClassMemberType } from "../enums/class-member-type.js";
+import { WriteModifier } from "../enums/write-modifier.js";
+import { getDecorators, getDependencies, getIsAbstract, getIsExport, getIsStatic, isPrivate, isProtected, isPublic, isReadOnly, isWritable, order } from "../helpers/node-helper.js";
+import { AccessorNode } from "./accessor-node.js";
+import { ConstructorNode } from "./constructor-node.js";
+import { ElementNodeGroup } from "./element-node-group.js";
+import { ElementNode } from "./element-node.js";
+import { GetterNode } from "./getter-node.js";
+import { MethodNode } from "./method-node.js";
+import { PropertyNode } from "./property-node.js";
+import { SetterNode } from "./setter-node.js";
+import { StaticBlockDeclarationNode } from "./static-block-declaration-node.js";
 
 export class ClassNode extends ElementNode
 {
-    // #region Properties (14)
+    // #region Properties (15)
 
     public readonly accessors: AccessorNode[] = [];
     public readonly constructors: ConstructorNode[] = [];
@@ -24,6 +24,7 @@ export class ClassNode extends ElementNode
     public readonly dependencies: string[] = [];
     public readonly getters: GetterNode[] = [];
     public readonly isAbstract: boolean;
+    public readonly isExport: boolean;
     public readonly isStatic: boolean;
     public readonly membersEnd: number = 0;
     public readonly membersStart: number = 0;
@@ -108,6 +109,8 @@ export class ClassNode extends ElementNode
                 }
             }
         }
+
+        this.isExport = getIsExport(classDeclaration);
     }
 
     // #endregion Constructors

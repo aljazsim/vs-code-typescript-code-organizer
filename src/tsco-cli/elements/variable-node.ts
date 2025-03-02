@@ -1,7 +1,7 @@
 import * as ts from "typescript";
 
-import { getDependencies, getIsArrowFunction } from "../helpers/node-helper";
-import { ElementNode } from "./element-node";
+import { getDependencies, getIsArrowFunction } from "../helpers/node-helper.js";
+import { ElementNode } from "./element-node.js";
 
 export class VariableNode extends ElementNode
 {
@@ -15,7 +15,7 @@ export class VariableNode extends ElementNode
 
     // #region Constructors (1)
 
-    constructor(sourceFile: ts.SourceFile, variableDeclaration: ts.VariableDeclaration, public readonly isExport: boolean, public readonly isConst: boolean, leadingComment: string | null, trailingComment: string | null)
+    constructor(sourceFile: ts.SourceFile, variableDeclaration: ts.VariableDeclaration, public readonly isExport: boolean, public readonly isConst: boolean, public readonly isDeclaration: boolean, leadingComment: string | null, trailingComment: string | null)
     {
         super(sourceFile, variableDeclaration, leadingComment, trailingComment);
 

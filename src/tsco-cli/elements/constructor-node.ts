@@ -1,7 +1,7 @@
 import ts from "typescript";
 
-import { getDecorators } from "../helpers/node-helper";
-import { ElementNode } from "./element-node";
+import { getDecorators } from "../helpers/node-helper.js";
+import { ElementNode } from "./element-node.js";
 
 export class ConstructorNode extends ElementNode
 {

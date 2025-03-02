@@ -1,6 +1,6 @@
-import { InterfaceMemberConfiguration } from "./interface-member-configuration";
-import { InterfaceMemberGroupConfiguration } from "./interface-member-group-configuration";
-import { RegionConfiguration } from "./region-configuration";
+import { InterfaceMemberConfiguration } from "./interface-member-configuration.js";
+import { InterfaceMemberGroupConfiguration } from "./interface-member-group-configuration.js";
+import { RegionConfiguration } from "./region-configuration.js";
 
 export class InterfaceConfiguration
 {

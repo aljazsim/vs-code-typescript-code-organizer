@@ -1,4 +1,4 @@
-import { InterfaceMemberType } from "../enums/interface-member-type";
+import { InterfaceMemberType } from "../enums/interface-member-type.js";
 
 export class InterfaceMemberGroupConfiguration
 {

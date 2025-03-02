@@ -1,16 +1,16 @@
 import * as ts from "typescript";
 
-import { Configuration } from "../configuration/configuration";
-import { ClassNode } from "../elements/class-node";
-import { ElementNode } from "../elements/element-node";
-import { EnumNode } from "../elements/enum-node";
-import { ExpressionNode } from "../elements/expression-node";
-import { FunctionNode } from "../elements/function-node";
-import { ImportNode } from "../elements/import-node";
-import { InterfaceNode } from "../elements/interface-node";
-import { TypeAliasNode } from "../elements/type-alias-node";
-import { VariableNode } from "../elements/variable-node";
-import { getIsConst, getIsExport, getLeadingComment, getTrailingComment } from "../helpers/node-helper";
+import { Configuration } from "../configuration/configuration.js";
+import { ClassNode } from "../elements/class-node.js";
+import { ElementNode } from "../elements/element-node.js";
+import { EnumNode } from "../elements/enum-node.js";
+import { ExpressionNode } from "../elements/expression-node.js";
+import { FunctionNode } from "../elements/function-node.js";
+import { ImportNode } from "../elements/import-node.js";
+import { InterfaceNode } from "../elements/interface-node.js";
+import { TypeAliasNode } from "../elements/type-alias-node.js";
+import { VariableNode } from "../elements/variable-node.js";
+import { getIsConst, getIsDeclaration, getIsExport, getLeadingComment, getTrailingComment } from "../helpers/node-helper.js";
 
 export class SourceCodeAnalyzer
 {
@@ -99,6 +99,7 @@ export class SourceCodeAnalyzer
         else if (ts.isVariableStatement(node))
         {
             const isExport = getIsExport(node);
+            const isDeclaration = getIsDeclaration(node);
             const isConst = getIsConst(node.declarationList);
             const leadingComment = getLeadingComment(node, sourceFile);
             const trailingComment = getTrailingComment(node, sourceFile);
@@ -107,7 +108,7 @@ export class SourceCodeAnalyzer
             for (const variableDeclaration of node.declarationList.declarations)
             {
                 // variable
-                elements.push(new VariableNode(sourceFile, variableDeclaration, isExport, isConst, leadingComment, trailingComment));
+                elements.push(new VariableNode(sourceFile, variableDeclaration, isExport, isConst, isDeclaration, leadingComment, trailingComment));
             }
         }
         else if (node.kind == ts.SyntaxKind.SyntaxList)

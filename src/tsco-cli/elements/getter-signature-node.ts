@@ -1,6 +1,6 @@
 import ts from "typescript";
 
-import { ElementNode } from "./element-node";
+import { ElementNode } from "./element-node.js";
 
 export class GetterSignatureNode extends ElementNode
 {

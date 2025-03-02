@@ -1,5 +1,5 @@
-import { RegionConfiguration } from "../configuration/region-configuration";
-import { ElementNode } from "./element-node";
+import { RegionConfiguration } from "../configuration/region-configuration.js";
+import { ElementNode } from "./element-node.js";
 
 export class ElementNodeGroup
 {

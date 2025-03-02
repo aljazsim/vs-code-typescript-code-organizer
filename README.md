@@ -211,3 +211,10 @@ See [TypeScript Code Organizer Command Line Interface](https://www.npmjs.com/pac
 
 - fix issue with removing empty lines in code expressions
 - fix issue with using typed imports
+
+### 2.0.10
+
+- add setting for expanding/collapsing imports
+- fix issue with declaring modules
+- add support for exported enums, exported interfaces, exported classes and exported types (courtesy of [Carlos Jesús Huchim Ahumada](https://github.com/huchim))
+- add improved import statement grouping

@@ -1,4 +1,4 @@
-import { TypeMemberType } from "../enums/type-member-type";
+import { TypeMemberType } from "../enums/type-member-type.js";
 
 export class TypeMemberGroupConfiguration
 {
