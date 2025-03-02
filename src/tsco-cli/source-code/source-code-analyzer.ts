@@ -10,7 +10,7 @@ import { ImportNode } from "../elements/import-node";
 import { InterfaceNode } from "../elements/interface-node";
 import { TypeAliasNode } from "../elements/type-alias-node";
 import { VariableNode } from "../elements/variable-node";
-import { getIsConst, getIsExport, getLeadingComment, getTrailingComment } from "../helpers/node-helper";
+import { getIsConst, getIsDeclaration, getIsExport, getLeadingComment, getTrailingComment } from "../helpers/node-helper";
 
 export class SourceCodeAnalyzer
 {
@@ -99,6 +99,7 @@ export class SourceCodeAnalyzer
         else if (ts.isVariableStatement(node))
         {
             const isExport = getIsExport(node);
+            const isDeclaration = getIsDeclaration(node);
             const isConst = getIsConst(node.declarationList);
             const leadingComment = getLeadingComment(node, sourceFile);
             const trailingComment = getTrailingComment(node, sourceFile);
@@ -107,7 +108,7 @@ export class SourceCodeAnalyzer
             for (const variableDeclaration of node.declarationList.declarations)
             {
                 // variable
-                elements.push(new VariableNode(sourceFile, variableDeclaration, isExport, isConst, leadingComment, trailingComment));
+                elements.push(new VariableNode(sourceFile, variableDeclaration, isExport, isConst, isDeclaration, leadingComment, trailingComment));
             }
         }
         else if (node.kind == ts.SyntaxKind.SyntaxList)

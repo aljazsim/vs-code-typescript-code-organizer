@@ -2,7 +2,7 @@ import * as ts from "typescript";
 
 import { TypeConfiguration } from "../configuration/type-configuration";
 import { TypeMemberType } from "../enums/type-member-type";
-import { order } from "../helpers/node-helper";
+import { getIsExport, order } from "../helpers/node-helper";
 import { ElementNode } from "./element-node";
 import { ElementNodeGroup } from "./element-node-group";
 import { IndexSignatureNode } from "./index-signature-node";
@@ -11,9 +11,10 @@ import { PropertySignatureNode } from "./property-signature-node";
 
 export class TypeAliasNode extends ElementNode
 {
-    // #region Properties (6)
+    // #region Properties (7)
 
     public readonly indexes: IndexSignatureNode[] = [];
+    public readonly isExport: boolean;
     public readonly membersEnd: number = 0;
     public readonly membersStart: number = 0;
     public readonly methods: MethodSignatureNode[] = [];
@@ -69,6 +70,8 @@ export class TypeAliasNode extends ElementNode
                 }
             }
         }
+
+        this.isExport = getIsExport(typeAliasDeclaration);
     }
 
     // #endregion Constructors

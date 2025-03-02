@@ -17,6 +17,7 @@ import { TypeAliasNode } from "../elements/type-alias-node";
 import { VariableNode } from "../elements/variable-node";
 import { AccessModifier } from "../enums/access-modifier";
 import { WriteModifier } from "../enums/write-modifier";
+import { newLine } from "../source-code/source-code-constants";
 import { add, distinct, except, remove } from "./array-helper";
 import { compareStrings } from "./comparing-helper";
 import { matchRegEx, matchWildcard } from "./string-helper";
@@ -40,7 +41,7 @@ function sortBy<T extends ElementNode>(nodes: T[], sortDirection: string, groupW
 
 // #endregion Functions
 
-// #region Exported Functions (30)
+// #region Exported Functions (31)
 
 export function getAccessModifier(node: ts.PropertyDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration | ts.MethodDeclaration | ts.PropertySignature | ts.IndexSignatureDeclaration)
 {
@@ -74,9 +75,12 @@ export function getAccessModifier(node: ts.PropertyDeclaration | ts.GetAccessorD
     return accessModifier;
 }
 
-export function getClasses(nodes: ElementNode[], groupWithDecorators: boolean)
+export function getClasses(nodes: ElementNode[], groupWithDecorators: boolean, exported: boolean)
 {
-    return nodes.filter(n => n instanceof ClassNode).sort((a, b) => compareStrings(getName(a, groupWithDecorators), getName(b, groupWithDecorators)));
+    return nodes.filter(n => n instanceof ClassNode)
+        .map(c => c as ClassNode)
+        .filter(c => c.isExport === exported)
+        .sort((a, b) => compareStrings(getName(a, groupWithDecorators), getName(b, groupWithDecorators)));
 }
 
 export function getDecorators(node: ts.ClassDeclaration | ts.AccessorDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration | ts.PropertyDeclaration | ts.MethodDeclaration | ts.IndexedAccessTypeNode | ts.ConstructorDeclaration | ts.EnumDeclaration | ts.FunctionDeclaration | ts.IndexSignatureDeclaration | ts.MethodSignature | ts.PropertySignature | ts.TypeAliasDeclaration, sourceFile: ts.SourceFile)
@@ -106,9 +110,12 @@ export function getDependencies(sourceFile: ts.SourceFile, node: ts.Node, depend
     return distinct(dependencies).sort();
 }
 
-export function getEnums(nodes: ElementNode[])
+export function getEnums(nodes: ElementNode[], exported: boolean)
 {
-    return nodes.filter(n => n instanceof EnumNode).sort((a, b) => compareStrings(getName(a, false), getName(b, false)));
+    return nodes.filter(n => n instanceof EnumNode)
+        .map(t => t as EnumNode)
+        .filter(f => f.isExport === exported)
+        .sort((a, b) => compareStrings(getName(a, false), getName(b, false)));
 }
 
 export function getExpressions(nodes: ElementNode[])
@@ -134,8 +141,13 @@ export function getImports(nodes: ElementNode[])
     return nodes.filter(n => n instanceof ImportNode);
 }
 
-export function getInterfaces(nodes: ElementNode[])
+export function getInterfaces(nodes: ElementNode[], exported: boolean)
 {
+    return nodes.filter(n => n instanceof InterfaceNode)
+        .map(t => t as InterfaceNode)
+        .filter(f => f.isExport === exported)
+        .sort((a, b) => compareStrings(getName(a, false), getName(b, false)));
+
     return nodes.filter(n => n instanceof InterfaceNode).sort((a, b) => compareStrings(getName(a, false), getName(b, false)));
 }
 
@@ -167,10 +179,29 @@ export function getIsAsync(node: ts.MethodDeclaration | ts.PropertyDeclaration)
 
 export function getIsConst(node: ts.VariableDeclarationList)
 {
-    return node.flags === ts.NodeFlags.Const;
+    return (node.flags & ts.NodeFlags.Const) === ts.NodeFlags.Const;
 }
 
-export function getIsExport(node: ts.ClassDeclaration | ts.FunctionDeclaration | ts.VariableStatement)
+export function getIsDeclaration(node: ts.VariableStatement)
+{
+    let isExport = false;
+
+    if (node.modifiers &&
+        node.modifiers.length > 0)
+    {
+        const tmp = node.modifiers.find((modifier) => modifier.kind === ts.SyntaxKind.DeclareKeyword);
+
+        if (tmp &&
+            tmp.kind === ts.SyntaxKind.DeclareKeyword)
+        {
+            isExport = true;
+        }
+    }
+
+    return isExport;
+}
+
+export function getIsExport(node: Pick<ts.ClassDeclaration | ts.FunctionDeclaration | ts.VariableStatement | ts.TypeAliasDeclaration, "modifiers">)
 {
     let isExport = false;
 
@@ -205,7 +236,7 @@ export function getLeadingComment(node: ts.Node, sourceFile: ts.SourceFile)
         const end = commentRanges[0].end;
         const trailingNewLine = commentRanges[0].hasTrailingNewLine;
 
-        return sourceCode.substring(start, end).trimStart() + (trailingNewLine ? "\r\n" : "");
+        return sourceCode.substring(start, end).trimStart() + (trailingNewLine ? newLine : "");
     }
     else
     {
@@ -306,7 +337,7 @@ export function getTrailingComment(node: ts.Node, sourceFile: ts.SourceFile)
         const end = commentRanges[0].end;
         const trailingNewLine = commentRanges[0].hasTrailingNewLine;
 
-        return sourceCode.substring(start, end).trimEnd() + (trailingNewLine ? "\r\n" : "");
+        return sourceCode.substring(start, end).trimEnd() + (trailingNewLine ? newLine : "");
     }
     else
     {
@@ -314,9 +345,12 @@ export function getTrailingComment(node: ts.Node, sourceFile: ts.SourceFile)
     }
 }
 
-export function getTypeAliases(nodes: ElementNode[])
+export function getTypeAliases(nodes: ElementNode[], exported: boolean)
 {
-    return nodes.filter(n => n instanceof TypeAliasNode).sort((a, b) => compareStrings(getName(a, false), getName(b, false)));
+    return nodes.filter(n => n instanceof TypeAliasNode)
+        .map(t => t as TypeAliasNode)
+        .filter(f => f.isExport === exported)
+        .sort((a, b) => compareStrings(getName(a, false), getName(b, false)));
 }
 
 export function getVariables(nodes: ElementNode[], constant: boolean, exported: boolean, arrowFunctionVariables: boolean | null)

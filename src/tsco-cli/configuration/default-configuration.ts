@@ -1,5 +1,6 @@
-import { ImportSourceFilePathQuoteType } from "../enums/Import-source-file-path-quote-type";
 import { ClassMemberType } from "../enums/class-member-type";
+import { ImportExpand } from "../enums/import-expand";
+import { ImportSourceFilePathQuoteType } from "../enums/import-source-file-path-quote-type";
 import { InterfaceMemberType } from "../enums/interface-member-type";
 import { ModuleMemberType } from "../enums/module-member-type";
 import { TypeMemberType } from "../enums/type-member-type";
@@ -19,7 +20,8 @@ export const defaultConfiguration: Configuration =
         sortImportsByName: true,
         groupImportsBySource: true,
         separateImportGroups: true,
-        quote: ImportSourceFilePathQuoteType.Double
+        quote: ImportSourceFilePathQuoteType.Double,
+        expand: ImportExpand.Never,
     },
     modules: {
         regions: {
@@ -35,7 +37,7 @@ export const defaultConfiguration: Configuration =
             {
                 sortDirection: "asc",
                 caption: "Enums",
-                memberTypes: [ModuleMemberType.enums],
+                memberTypes: [ModuleMemberType.enums, ModuleMemberType.exportedEnums],
                 memberTypesGrouped: true,
                 placeAbove: [],
                 placeBelow: []
@@ -43,7 +45,7 @@ export const defaultConfiguration: Configuration =
             {
                 sortDirection: "asc",
                 caption: "Interfaces",
-                memberTypes: [ModuleMemberType.interfaces],
+                memberTypes: [ModuleMemberType.interfaces, ModuleMemberType.exportedInterfaces],
                 memberTypesGrouped: true,
                 placeAbove: [],
                 placeBelow: []
@@ -51,7 +53,7 @@ export const defaultConfiguration: Configuration =
             {
                 sortDirection: "asc",
                 caption: "Classes",
-                memberTypes: [ModuleMemberType.classes],
+                memberTypes: [ModuleMemberType.classes, ModuleMemberType.exportedClasses],
                 memberTypesGrouped: true,
                 placeAbove: [],
                 placeBelow: []
@@ -59,7 +61,7 @@ export const defaultConfiguration: Configuration =
             {
                 sortDirection: "asc",
                 caption: "Types",
-                memberTypes: [ModuleMemberType.types],
+                memberTypes: [ModuleMemberType.types, ModuleMemberType.exportedTypes],
                 memberTypesGrouped: true,
                 placeAbove: [],
                 placeBelow: []

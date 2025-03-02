@@ -1,5 +1,6 @@
-import { ImportSourceFilePathQuoteType } from "../enums/Import-source-file-path-quote-type";
 import { ClassMemberType } from "../enums/class-member-type";
+import { ImportExpand } from "../enums/import-expand";
+import { ImportSourceFilePathQuoteType } from "../enums/import-source-file-path-quote-type";
 import { InterfaceMemberType } from "../enums/interface-member-type";
 import { ModuleMemberType } from "../enums/module-member-type";
 import { TypeMemberType } from "../enums/type-member-type";
@@ -78,7 +79,8 @@ export class Configuration
                     configuration.imports?.sortImportsByName ?? defaultConfiguration.imports.sortImportsByName,
                     configuration.imports?.groupImportsBySource ?? defaultConfiguration.imports.groupImportsBySource,
                     configuration.imports?.separateImportGroups ?? defaultConfiguration.imports.separateImportGroups,
-                    this.parseImportSourceFilePathQuoteType(configuration.imports?.quote) ?? defaultConfiguration.imports.quote
+                    this.parseImportSourceFilePathQuoteType(configuration.imports?.quote) ?? defaultConfiguration.imports.quote,
+                    this.parseImportExpand(configuration.imports?.expand) ?? defaultConfiguration.imports.expand
                 ),
             new ModuleConfiguration
                 (
@@ -159,7 +161,8 @@ export class Configuration
                     defaultConfiguration.imports.sortImportsByName,
                     defaultConfiguration.imports.groupImportsBySource,
                     defaultConfiguration.imports.separateImportGroups,
-                    this.parseImportSourceFilePathQuoteType(defaultConfiguration.imports.quote) ?? ImportSourceFilePathQuoteType.Double
+                    this.parseImportSourceFilePathQuoteType(defaultConfiguration.imports.quote) ?? ImportSourceFilePathQuoteType.Double,
+                    this.parseImportExpand(defaultConfiguration.imports.expand) ?? ImportExpand.Never
                 ),
             new ModuleConfiguration
                 (
@@ -228,7 +231,7 @@ export class Configuration
 
     // #endregion Public Static Methods
 
-    // #region Private Static Methods (9)
+    // #region Private Static Methods (10)
 
     private static fixClassMemberMemberGroup(defaultMemberTypeOrder: ClassMemberGroupConfiguration[], memberTypeOrder: ClassMemberGroupConfiguration[]): ClassMemberGroupConfiguration[]
     {
@@ -337,6 +340,26 @@ export class Configuration
         }
 
         return new ClassMemberGroupConfiguration(sortDirection, caption, memberTypes, memberTypesGrouped, placeAbove, placeBelow);
+    }
+
+    private static parseImportExpand(importExpand: string)
+    {
+        if (importExpand === ImportExpand.Never)
+        {
+            return ImportExpand.Never;
+        }
+        else if (importExpand === ImportExpand.Always)
+        {
+            return ImportExpand.Always;
+        }
+        else if (importExpand === ImportExpand.WhenMoreThanOneNamedImport)
+        {
+            return ImportExpand.WhenMoreThanOneNamedImport;
+        }
+        else
+        {
+            return null;
+        }
     }
 
     private static parseImportSourceFilePathQuoteType(quoteType: string)

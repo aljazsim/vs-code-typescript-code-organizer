@@ -3,7 +3,7 @@ import * as ts from "typescript";
 import { ClassConfiguration } from "../configuration/class-configuration";
 import { ClassMemberType } from "../enums/class-member-type";
 import { WriteModifier } from "../enums/write-modifier";
-import { getDecorators, getDependencies, getIsAbstract, getIsStatic, isPrivate, isProtected, isPublic, isReadOnly, isWritable, order } from "../helpers/node-helper";
+import { getDecorators, getDependencies, getIsAbstract, getIsExport, getIsStatic, isPrivate, isProtected, isPublic, isReadOnly, isWritable, order } from "../helpers/node-helper";
 import { AccessorNode } from "./accessor-node";
 import { ConstructorNode } from "./constructor-node";
 import { ElementNode } from "./element-node";
@@ -16,7 +16,7 @@ import { StaticBlockDeclarationNode } from "./static-block-declaration-node";
 
 export class ClassNode extends ElementNode
 {
-    // #region Properties (14)
+    // #region Properties (15)
 
     public readonly accessors: AccessorNode[] = [];
     public readonly constructors: ConstructorNode[] = [];
@@ -24,6 +24,7 @@ export class ClassNode extends ElementNode
     public readonly dependencies: string[] = [];
     public readonly getters: GetterNode[] = [];
     public readonly isAbstract: boolean;
+    public readonly isExport: boolean;
     public readonly isStatic: boolean;
     public readonly membersEnd: number = 0;
     public readonly membersStart: number = 0;
@@ -108,6 +109,8 @@ export class ClassNode extends ElementNode
                 }
             }
         }
+
+        this.isExport = getIsExport(classDeclaration);
     }
 
     // #endregion Constructors
