@@ -2,7 +2,7 @@ import * as ts from "typescript";
 
 import { AccessModifier } from "../enums/access-modifier";
 import { WriteModifier } from "../enums/write-modifier";
-import { getAccessModifier, getDecorators, getIsAbstract, getIsArrowFunction, getIsStatic, getWriteMode } from "../helpers/node-helper";
+import { getAccessModifier, getDecorators, getDependencies, getIsAbstract, getIsArrowFunction, getIsStatic, getWriteMode } from "../helpers/node-helper";
 import { ElementNode } from "./element-node";
 
 export class PropertyNode extends ElementNode
@@ -41,6 +41,14 @@ export class PropertyNode extends ElementNode
         this.writeMode = getWriteMode(propertyDeclaration);
 
         this.isArrowFunction = getIsArrowFunction(propertyDeclaration);
+
+        if (propertyDeclaration.initializer)
+        {
+            for (const dependency of getDependencies(sourceFile, propertyDeclaration.initializer, []))
+            {
+                this.dependencies.push(dependency);
+            }
+        }
     }
 
     // #endregion Constructors

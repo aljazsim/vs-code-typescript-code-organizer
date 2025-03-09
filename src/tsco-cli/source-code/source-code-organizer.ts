@@ -2,19 +2,18 @@ import ts, { SourceFile } from "typescript";
 
 import { Configuration } from "../configuration/configuration";
 import { ImportConfiguration } from "../configuration/import-configuration";
-import { ClassNode } from "../elements/class-node";
 import { ElementNode } from "../elements/element-node";
 import { ElementNodeGroup } from "../elements/element-node-group";
 import { ImportNode } from "../elements/import-node";
-import { VariableNode } from "../elements/variable-node";
 import { ModuleMemberType } from "../enums/module-member-type";
-import { except, intersect, remove } from "../helpers/array-helper";
+import { distinct, except, intersect, remove } from "../helpers/array-helper";
 import { compareStrings } from "../helpers/comparing-helper";
-import { getFileExtension } from "../helpers/file-system-helper";
-import { getClasses, getEnums, getExpressions, getFunctions, getImports, getInterfaces, getTypeAliases, getVariables, order } from "../helpers/node-helper";
+import { directoryExists, getDirectoryPath, getFileExtension, getFilePathWithoutExtension, getFiles, getFullPath, getRelativePath, joinPath } from "../helpers/file-system-helper";
+import { getClasses, getEnums, getExpressions, getFunctions, getImports, getInterfaces, getNodeDependencies, getNodeNames, getTypeAliases, getVariables, order } from "../helpers/node-helper";
 import { SourceCode } from "./source-code";
 import { SourceCodeAnalyzer } from "./source-code-analyzer";
 import { spacesRegex } from "./source-code-constants";
+import { log, logError } from "./source-code-logger";
 import { SourceCodePrinter } from "./source-code-printer";
 
 export class SourceCodeOrganizer
@@ -40,18 +39,18 @@ export class SourceCodeOrganizer
 
                 const sourceFile = ts.createSourceFile(sourceCodeFilePath, sourceCodeWithoutRegions.toString(), ts.ScriptTarget.Latest, false, ts.ScriptKind.TS);
                 const elements = SourceCodeAnalyzer.getNodes(sourceFile, configuration);
-                const topLevelGroups = await this.organizeModuleMembers(elements, configuration, sourceFile); // TODO: move this to module node
+                const topLevelGroups = await this.organizeModuleMembers(elements, configuration, sourceFile, sourceCodeFilePath); // TODO: move this to module node
 
                 return SourceCodePrinter.print(fileHeader, topLevelGroups, configuration).toString();
             }
             catch (error)
             {
-                console.error(error);
+                logError(`tsco could not organize ${sourceCodeFilePath}: ${error}`);
             }
         }
         else
         {
-            console.log(`tsco ignoring ${sourceCodeFilePath}`);
+            log(`tsco ignoring ${sourceCodeFilePath}`);
         }
 
         return sourceCode;
@@ -59,7 +58,7 @@ export class SourceCodeOrganizer
 
     // #endregion Public Static Methods
 
-    // #region Private Static Methods (5)
+    // #region Private Static Methods (8)
 
     private static mergeImportsWithSameReferences(imports: ImportNode[])
     {
@@ -130,7 +129,7 @@ export class SourceCodeOrganizer
         }
     }
 
-    private static async organizeImports(imports: ImportNode[], configuration: ImportConfiguration, sourceFile: SourceFile)
+    private static async organizeImports(imports: ImportNode[], configuration: ImportConfiguration, sourceFile: SourceFile, sourceFilePath: string)
     {
         this.mergeImportsWithSameReferences(imports);
 
@@ -140,6 +139,8 @@ export class SourceCodeOrganizer
         }
 
         this.removeEmptyImports(imports);
+
+        await this.updateImportSourceCasings(sourceFilePath, imports);
 
         if (configuration.sortImportsBySource)
         {
@@ -160,7 +161,9 @@ export class SourceCodeOrganizer
             const moduleImports = imports.filter(i => i.isModuleReference && !i.namespace && !i.source.startsWith("@"));
 
             const stringLiteralImports = imports.filter(i => !i.isModuleReference && !i.nameBinding && !i.namedImports && !i.namespace);
-            const fileImports = imports.filter(i => !i.isModuleReference && (i.nameBinding || i.namedImports || i.namespace));
+
+            const fileNamespaceImports = imports.filter(i => !i.isModuleReference && !i.nameBinding && !i.namedImports && i.namespace);
+            const fileImports = imports.filter(i => !i.isModuleReference && (i.nameBinding || i.namedImports) && !i.namespace);
 
             if (configuration.separateImportGroups)
             {
@@ -169,20 +172,21 @@ export class SourceCodeOrganizer
                 const atModuleImportGroup = new ElementNodeGroup("@ Module Imports", [], atModuleImports, false, null);
                 const moduleImportGroup = new ElementNodeGroup("Module Imports", [], moduleImports, false, null);
                 const stringLiteralImportGroup = new ElementNodeGroup("String Literal Imports", [], stringLiteralImports, false, null);
+                const fileNamespaceImportGroup = new ElementNodeGroup("File Namespace Imports", [], fileNamespaceImports, false, null);
                 const fileImportGroup = new ElementNodeGroup("File Imports", [], fileImports, false, null);
 
-                return new ElementNodeGroup("Imports", [atNamespaceImportGroup, namespaceImportGroup, atModuleImportGroup, moduleImportGroup, stringLiteralImportGroup, fileImportGroup], [], false, null);
+                return new ElementNodeGroup("Imports", [atNamespaceImportGroup, namespaceImportGroup, atModuleImportGroup, moduleImportGroup, stringLiteralImportGroup, fileNamespaceImportGroup, fileImportGroup], [], false, null);
             }
             else
             {
-                imports = atNamespaceImports.concat(namespaceImports).concat(atModuleImports).concat(moduleImports).concat(stringLiteralImports).concat(fileImports);
+                imports = atNamespaceImports.concat(namespaceImports).concat(atModuleImports).concat(moduleImports).concat(stringLiteralImports).concat(fileNamespaceImports).concat(fileImports);
             }
         }
 
         return new ElementNodeGroup("Imports", [], imports, false, null);
     }
 
-    private static async organizeModuleMembers(elements: ElementNode[], configuration: Configuration, sourceFile: SourceFile)
+    private static async organizeModuleMembers(elements: ElementNode[], configuration: Configuration, sourceFile: SourceFile, sourceFilePath: string)
     {
         const regions: ElementNodeGroup[] = [];
         const imports = getImports(elements);
@@ -194,6 +198,7 @@ export class SourceCodeOrganizer
         const exportedTypes = getTypeAliases(elements, true);
         const enums = getEnums(elements, false);
         const exportedEnums = getEnums(elements, true);
+
         const functions = getFunctions(elements, configuration.modules.members.treatArrowFunctionVariablesAsMethods, configuration.modules.members.treatArrowFunctionConstantsAsMethods, false);
         const exportedFunctions = getFunctions(elements, configuration.modules.members.treatArrowFunctionVariablesAsMethods, configuration.modules.members.treatArrowFunctionConstantsAsMethods, true);
         const constants = getVariables(elements, true, false, configuration.modules.members.treatArrowFunctionConstantsAsMethods ? false : null);
@@ -201,29 +206,28 @@ export class SourceCodeOrganizer
         const variables = getVariables(elements, false, false, configuration.modules.members.treatArrowFunctionVariablesAsMethods ? false : null);
         const exportedVariables = getVariables(elements, false, true, configuration.modules.members.treatArrowFunctionVariablesAsMethods ? false : null);
         const expressions = getExpressions(elements);
+        const objectElements = [
+            ...interfaces,
+            ...exportedInterfaces,
+            ...classes,
+            ...exportedClasses,
+            ...types,
+            ...exportedTypes,
+            ...enums,
+            ...exportedEnums,
+            ...functions]
 
         if (imports.length > 0)
         {
-            regions.push(await this.organizeImports(imports.map(i => i as ImportNode), configuration.imports, sourceFile));
+            regions.push(await this.organizeImports(imports.map(i => i as ImportNode), configuration.imports, sourceFile, sourceFilePath));
         }
 
-        const vars = Array<string>()
-            .concat(variables.map(v => v.name))
-            .concat(exportedVariables.map(v => v.name))
-            .concat(constants.map(v => v.name))
-            .concat(exportedConstants.map(v => v.name));
-
-        if (variables.map(v => v as VariableNode).some(v => intersect(vars, v.dependencies).length > 0) ||
-            exportedVariables.map(v => v as VariableNode).some(v => intersect(vars, v.dependencies).length > 0) ||
-            constants.map(v => v as VariableNode).some(v => intersect(vars, v.dependencies).length > 0) ||
-            exportedConstants.map(v => v as VariableNode).some(v => intersect(vars, v.dependencies).length > 0) ||
-            classes.map(v => v as ClassNode).some(v => intersect(vars, v.dependencies).length > 0) ||
-            exportedClasses.map(v => v as ClassNode).some(v => intersect(vars, v.dependencies).length > 0))
+        if (intersect(getNodeDependencies([...classes, ...exportedClasses]), getNodeNames([...variables, ...exportedVariables, ...constants, ...exportedConstants])).length > 0)
         {
-            // dependencies between module members -> skip module element sorting to prevent breaking dependency order
+            // dependencies between module members -> skip module element sorting to prevent breaking declaration dependency order
             regions.push(new ElementNodeGroup(null, [], except(elements, imports), false, null));
 
-            console.log(`tsco skip module sorting in ${sourceFile.fileName}, because dependencies between module members were found`);
+            log(`tsco skipping module sorting in ${sourceFile.fileName}, because declaration dependencies between classes and variables were found`);
         }
         else
         {
@@ -242,6 +246,10 @@ export class SourceCodeOrganizer
                     {
                         elementNodes = enums;
                     }
+                    else if (memberType === ModuleMemberType.exportedEnums)
+                    {
+                        elementNodes = exportedEnums;
+                    }
                     else if (memberType === ModuleMemberType.types)
                     {
                         elementNodes = types;
@@ -249,10 +257,6 @@ export class SourceCodeOrganizer
                     else if (memberType === ModuleMemberType.exportedTypes)
                     {
                         elementNodes = exportedTypes;
-                    }
-                    else if (memberType === ModuleMemberType.exportedEnums)
-                    {
-                        elementNodes = exportedEnums;
                     }
                     else if (memberType === ModuleMemberType.interfaces)
                     {
@@ -278,20 +282,24 @@ export class SourceCodeOrganizer
                     {
                         elementNodes = exportedFunctions;
                     }
-                    else if (memberType === ModuleMemberType.constants)
+                    else if (memberType === ModuleMemberType.constants && expressions.length === 0)
                     {
+                        // don't create variable group if there are expressions
                         elementNodes = constants;
                     }
-                    else if (memberType === ModuleMemberType.exportedConstants)
+                    else if (memberType === ModuleMemberType.exportedConstants && expressions.length === 0)
                     {
+                        // don't create variable group if there are expressions
                         elementNodes = exportedConstants;
                     }
-                    else if (memberType === ModuleMemberType.variables)
+                    else if (memberType === ModuleMemberType.variables && expressions.length === 0)
                     {
+                        // don't create variable group if there are expressions
                         elementNodes = variables;
                     }
-                    else if (memberType === ModuleMemberType.exportedVariables)
+                    else if (memberType === ModuleMemberType.exportedVariables && expressions.length === 0)
                     {
+                        // don't create variable group if there are expressions
                         elementNodes = exportedVariables;
                     }
 
@@ -303,7 +311,9 @@ export class SourceCodeOrganizer
 
                 if (memberGroups.length > 0)
                 {
-                    const isRegion = enums.length + exportedEnums.length + types.length + exportedTypes.length + interfaces.length + exportedInterfaces.length + exportedClasses.length + classes.length > 1 ||
+                    // if there's only 1 enum/interface/class/type -> no need for a region
+                    // if there's at least 1 function/variable -> create a region
+                    const isRegion = objectElements.length > 1 ||
                         functions.length > 0 ||
                         exportedFunctions.length > 0 ||
                         constants.length > 0 ||
@@ -324,8 +334,15 @@ export class SourceCodeOrganizer
 
             if (expressions.length > 0)
             {
-                // expressions go to the end because of dependencies
-                regions.push(new ElementNodeGroup(null, [], expressions, false, null));
+                // this file contains a script -> leave variables and expressions alone, but organize imports, enums/interfaces/classes/types/functions
+                regions.push(new ElementNodeGroup(null, [], except(elements, [...imports, ...objectElements, ...functions, ...exportedFunctions]), false, null));
+
+                log(`tsco skipping variable sorting in ${sourceFile.fileName}, because expressions were found`);
+            }
+            else
+            {
+                // this file contains no executable code ->  deal with declaration dependency order
+                this.resolveDeclarationDependenciesOrder(regions);
             }
         }
 
@@ -376,6 +393,104 @@ export class SourceCodeOrganizer
                 if (!SourceCodeAnalyzer.hasReference(sourceFile, import1.nameBinding))
                 {
                     import1.nameBinding = null;
+                }
+            }
+        }
+    }
+
+    private static resolveDeclarationDependenciesOrder(nodeGroups: ElementNodeGroup[])
+    {
+        for (const nodeGroup of nodeGroups)
+        {
+            this.resolveDeclarationDependenciesOrderWithinGroup(nodeGroup.nodes);
+            this.resolveDeclarationDependenciesOrder(nodeGroup.nodeSubGroups);
+        }
+    }
+
+    private static resolveDeclarationDependenciesOrderWithinGroup(nodes: ElementNode[])
+    {
+        const maxIterations = 1000; // there might be a declaration dependency cycle
+
+        for (let iteration = 0; iteration < maxIterations; iteration++)
+        {
+            let dependenciesDetected = false;
+
+            for (let i = 0; i < nodes.length; i++)
+            {
+                const dependencies = distinct(nodes[i].dependencies.sort());
+
+                for (const dependency of dependencies)
+                {
+                    const dependencyIndex = nodes.findIndex(n => getNodeNames([n]).indexOf(dependency) >= 0);
+
+                    if (dependencyIndex > i)
+                    {
+                        const node = nodes[i];
+                        const dependencyNode = nodes[dependencyIndex];
+
+                        for (let j = dependencyIndex; j > i; j--)
+                        {
+                            nodes[j] = nodes[j - 1];
+                        }
+
+                        nodes[i] = dependencyNode;
+                        nodes[i + 1] = node;
+
+                        dependenciesDetected = true;
+
+                        break;
+                    }
+                }
+            }
+
+            if (!dependenciesDetected)
+            {
+                break;
+            }
+        }
+    }
+
+    private static async updateImportSourceCasings(filePath: string, imports: ImportNode[])
+    {
+        const directoryPath = getDirectoryPath(getFullPath(filePath));
+
+        for (const import1 of imports.filter(i => !i.isModuleReference))
+        {
+            let sourceFilePath = getFullPath(joinPath(directoryPath, import1.source));
+            const sourceFilePathExtension = getFileExtension(sourceFilePath);
+
+            if (sourceFilePathExtension === "")
+            {
+                sourceFilePath = `${sourceFilePath}.ts`;
+            }
+            else if (sourceFilePathExtension.toLowerCase() === ".js")
+            {
+                sourceFilePath = `${getFilePathWithoutExtension(sourceFilePath)}.ts`;
+            }
+
+            if (await directoryExists(getDirectoryPath(sourceFilePath)))
+            {
+                const filePaths = await getFiles(getDirectoryPath(sourceFilePath));
+
+                if (filePaths.length > 0)
+                {
+                    const filePathMatchesCaseInsensitive = filePaths.filter(fp => fp.toLowerCase() === sourceFilePath.toLowerCase());
+
+                    if (filePathMatchesCaseInsensitive.length === 1)
+                    {
+                        if (sourceFilePathExtension === "")
+                        {
+                            import1.source = getFilePathWithoutExtension(getRelativePath(directoryPath, filePathMatchesCaseInsensitive[0]));
+                        }
+                        else if (sourceFilePathExtension.toLowerCase() === ".js")
+                        {
+                            import1.source = getFilePathWithoutExtension(getRelativePath(directoryPath, filePathMatchesCaseInsensitive[0])) + "";
+                        }
+                        else
+                        {
+                            import1.source = getRelativePath(directoryPath, filePathMatchesCaseInsensitive[0]);
+                        }
+                    }
                 }
             }
         }

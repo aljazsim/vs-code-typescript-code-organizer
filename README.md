@@ -218,3 +218,9 @@ See [TypeScript Code Organizer Command Line Interface](https://www.npmjs.com/pac
 - fix issue with declaring modules
 - add support for exported enums, exported interfaces, exported classes and exported types (courtesy of [Carlos Jesús Huchim Ahumada](https://github.com/huchim))
 - add improved import statement grouping
+
+## 2.0.12
+- add missing file namespace import grouping
+- add checking relative import source casing
+- add support for declaration dependency order resolution
+- fix issue with file name casing

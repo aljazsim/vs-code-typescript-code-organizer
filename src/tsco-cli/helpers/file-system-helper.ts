@@ -10,7 +10,7 @@ function toUnixPath(filePath: string)
 
 // #endregion Functions
 
-// #region Exported Functions (12)
+// #region Exported Functions (15)
 
 export async function deleteFile(filePath: string)
 {
@@ -18,6 +18,11 @@ export async function deleteFile(filePath: string)
     {
         await fs.promises.unlink(filePath);
     }
+}
+
+export async function directoryExists(directoryPath: string)
+{
+    return await fileExists(directoryPath);
 }
 
 export async function fileExists(filePath: string)
@@ -41,7 +46,7 @@ export function getDirectoryPath(filePath: string)
 
 export function getFileExtension(filePath: string)
 {
-    return getFileName(filePath).replace(getFileNameWithoutExtension(filePath), "");
+    return path.parse(filePath).ext;
 }
 
 export function getFileName(filePath: string)
@@ -51,7 +56,17 @@ export function getFileName(filePath: string)
 
 export function getFileNameWithoutExtension(filePath: string)
 {
-    return (path.basename(filePath) as string).replace(/\.[^/.]+$/, "");
+    return getFileName(filePath).substring(0, getFileName(filePath).length - getFileExtension(filePath).length);
+}
+
+export function getFilePathWithoutExtension(filePath: string)
+{
+    return filePath.substring(0, filePath.length - getFileExtension(filePath).length);
+}
+
+export async function getFiles(directoryPath: string, recursive: boolean = false)
+{
+    return (await fs.promises.readdir(directoryPath, { recursive })).map(fp => getFullPath(joinPath(directoryPath, fp)));
 }
 
 export function getFullPath(fileOrDirectoryPath: string)
@@ -66,7 +81,16 @@ export function getProjectRootDirectoryPath(filePath: string)
 
 export function getRelativePath(sourcePath: string, targetPath: string)
 {
-    return toUnixPath(path.relative(getFullPath(sourcePath), targetPath) as string);
+    const relativePath = toUnixPath(path.relative(getFullPath(sourcePath), targetPath) as string);
+
+    if (!relativePath.startsWith("./") && !relativePath.startsWith("../"))
+    {
+        return `./${relativePath}`;
+    }
+    else
+    {
+        return relativePath;
+    }
 }
 
 export function joinPath(path1: string, path2: string)
