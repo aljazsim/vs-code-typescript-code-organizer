@@ -2,19 +2,19 @@ import ts, { SourceFile } from "typescript";
 
 import { Configuration } from "../configuration/configuration";
 import { ImportConfiguration } from "../configuration/import-configuration";
-import { ElementNode } from "../elements/element-node";
 import { ElementNodeGroup } from "../elements/element-node-group";
+import { ElementNode } from "../elements/element-node";
 import { ImportNode } from "../elements/import-node";
 import { ModuleMemberType } from "../enums/module-member-type";
 import { distinct, except, intersect, remove } from "../helpers/array-helper";
 import { compareStrings } from "../helpers/comparing-helper";
 import { directoryExists, getDirectoryPath, getFileExtension, getFilePathWithoutExtension, getFiles, getFullPath, getRelativePath, joinPath } from "../helpers/file-system-helper";
 import { getClasses, getEnums, getExpressions, getFunctions, getImports, getInterfaces, getNodeDependencies, getNodeNames, getTypeAliases, getVariables, order } from "../helpers/node-helper";
-import { SourceCode } from "./source-code";
 import { SourceCodeAnalyzer } from "./source-code-analyzer";
 import { spacesRegex } from "./source-code-constants";
 import { log, logError } from "./source-code-logger";
 import { SourceCodePrinter } from "./source-code-printer";
+import { SourceCode } from "./source-code";
 
 export class SourceCodeOrganizer
 {
@@ -453,6 +453,8 @@ export class SourceCodeOrganizer
     private static async updateImportSourceCasings(filePath: string, imports: ImportNode[])
     {
         const directoryPath = getDirectoryPath(getFullPath(filePath));
+        const typeScript = "ts";
+        const javaScript = "js"
 
         for (const import1 of imports.filter(i => !i.isModuleReference))
         {
@@ -461,11 +463,11 @@ export class SourceCodeOrganizer
 
             if (sourceFilePathExtension === "")
             {
-                sourceFilePath = `${sourceFilePath}.ts`;
+                sourceFilePath = `${sourceFilePath}.${typeScript}`;
             }
-            else if (sourceFilePathExtension.toLowerCase() === ".js")
+            else if (sourceFilePathExtension.toLowerCase() === `.${javaScript}`)
             {
-                sourceFilePath = `${getFilePathWithoutExtension(sourceFilePath)}.ts`;
+                sourceFilePath = `${getFilePathWithoutExtension(sourceFilePath)}.${typeScript}`;
             }
 
             if (await directoryExists(getDirectoryPath(sourceFilePath)))
@@ -482,9 +484,9 @@ export class SourceCodeOrganizer
                         {
                             import1.source = getFilePathWithoutExtension(getRelativePath(directoryPath, filePathMatchesCaseInsensitive[0]));
                         }
-                        else if (sourceFilePathExtension.toLowerCase() === ".js")
+                        else if (sourceFilePathExtension.toLowerCase() === `.${javaScript}`)
                         {
-                            import1.source = getFilePathWithoutExtension(getRelativePath(directoryPath, filePathMatchesCaseInsensitive[0])) + "";
+                            import1.source = getFilePathWithoutExtension(getRelativePath(directoryPath, filePathMatchesCaseInsensitive[0])) + `.${javaScript}`;
                         }
                         else
                         {
