@@ -41,7 +41,7 @@ function sortBy<T extends ElementNode>(nodes: T[], sortDirection: string, groupW
 
 // #endregion Functions
 
-// #region Exported Functions (31)
+// #region Exported Functions (33)
 
 export function getAccessModifier(node: ts.PropertyDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration | ts.MethodDeclaration | ts.PropertySignature | ts.IndexSignatureDeclaration)
 {
@@ -233,8 +233,8 @@ export function getLeadingComment(node: ts.Node, sourceFile: ts.SourceFile)
     if (commentRanges && commentRanges.length > 0)
     {
         const start = commentRanges[0].pos;
-        const end = commentRanges[0].end;
-        const trailingNewLine = commentRanges[0].hasTrailingNewLine;
+        const end = commentRanges[commentRanges.length - 1].end;
+        const trailingNewLine = commentRanges[commentRanges.length - 1].hasTrailingNewLine;
 
         return sourceCode.substring(start, end).trimStart() + (trailingNewLine ? newLine : "");
     }
@@ -326,6 +326,17 @@ export function getName(node: ElementNode, groupWithDecorators: boolean): string
     return `${nodeDecorators.join(", ")} ${nodeName}`.trim();
 }
 
+export function getNodeDependencies(nodes: ElementNode[])
+{
+    return distinct(nodes.flatMap(n => n.dependencies)).sort();
+}
+
+export function getNodeNames(nodes: ElementNode[])
+{
+    // anonymous constants can have more than one comma separated name
+    return nodes.map(n => n.name).flatMap(name => name.split(","));
+}
+
 export function getTrailingComment(node: ts.Node, sourceFile: ts.SourceFile)
 {
     const sourceCode = node.getFullText(sourceFile);
@@ -334,8 +345,8 @@ export function getTrailingComment(node: ts.Node, sourceFile: ts.SourceFile)
     if (commentRanges && commentRanges.length > 0)
     {
         const start = commentRanges[0].pos;
-        const end = commentRanges[0].end;
-        const trailingNewLine = commentRanges[0].hasTrailingNewLine;
+        const end = commentRanges[commentRanges.length - 1].end;
+        const trailingNewLine = commentRanges[commentRanges.length - 1].hasTrailingNewLine;
 
         return sourceCode.substring(start, end).trimEnd() + (trailingNewLine ? newLine : "");
     }

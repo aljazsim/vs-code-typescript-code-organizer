@@ -1,9 +1,11 @@
-import globToRegExp from "glob-to-regexp";
 import * as vscode from "vscode";
+
+import globToRegExp from "glob-to-regexp";
 
 import { Settings } from "./settings/settings";
 import { Configuration } from "./tsco-cli/configuration/configuration";
 import { fileExists, getDirectoryPath, getFullPath, getRelativePath, joinPath, readFile, writeFile } from "./tsco-cli/helpers/file-system-helper";
+import { log, setLogger } from "./tsco-cli/source-code/source-code-logger";
 import { SourceCodeOrganizer } from "./tsco-cli/source-code/source-code-organizer";
 
 // #region Functions (10)
@@ -14,21 +16,17 @@ async function getConfiguration(configurationFilePath: string | null)
     {
         if (await fileExists(configurationFilePath))
         {
-            output.appendLine(`tsco using configuration file ${configurationFilePath}`);
-
             // absolute configuration file path from settings
             return await Configuration.getConfiguration(configurationFilePath);
         }
         else if (await fileExists(joinPath(getWorkspaceRootDirectoryPath(), configurationFilePath)))
         {
-            output.appendLine(`tsco using configuration file ${joinPath(getWorkspaceRootDirectoryPath(), configurationFilePath)}`);
-
             // relative configuration file path from settings
             return await Configuration.getConfiguration(joinPath(getWorkspaceRootDirectoryPath(), configurationFilePath));
         }
         else
         {
-            output.appendLine(`tsco configuration file ${getFullPath(configurationFilePath)} not found`);
+            log(`tsco configuration file ${getFullPath(configurationFilePath)} not found`);
         }
     }
 
@@ -38,8 +36,6 @@ async function getConfiguration(configurationFilePath: string | null)
 
     if (await fileExists(configurationFilePath))
     {
-        output.appendLine(`tsco using configuration file ${configurationFilePath}`);
-
         // look in workspace root
         return await Configuration.getConfiguration(configurationFilePath);
     }
@@ -52,13 +48,11 @@ async function getConfiguration(configurationFilePath: string | null)
 
         if (await fileExists(configurationFilePath))
         {
-            output.appendLine(`tsco using configuration file ${configurationFilePath}`);
-
             return await Configuration.getConfiguration(configurationFilePath);
         }
     }
 
-    output.appendLine("tsco using default configuration");
+    log("tsco using default configuration");
 
     // default configuration
     return Configuration.getDefaultConfiguration();
@@ -196,12 +190,12 @@ async function organize(sourceCodeFilePath: string, configuration: Configuration
 
     if (configuration.files.include.length > 0)
     {
-        include = configuration.files.include.some(inc => matches(inc, sourceCodeFilePathRelative) || matches(inc, "./" + sourceCodeFilePathRelative));
+        include = configuration.files.include.some(inc => matches(inc, sourceCodeFilePathRelative) || matches(inc, sourceCodeFilePathRelative.replace("../", "").replace("./", "")));
     }
 
     if (configuration.files.exclude.length > 0)
     {
-        exclude = configuration.files.exclude.some(exc => matches(exc, sourceCodeFilePathRelative) || matches(exc, "./" + sourceCodeFilePathRelative));
+        exclude = configuration.files.exclude.some(exc => matches(exc, sourceCodeFilePathRelative) || matches(exc, sourceCodeFilePathRelative.replace("../", "").replace("./", "")));
     }
 
     if (include && !exclude)
@@ -223,22 +217,22 @@ async function organize(sourceCodeFilePath: string, configuration: Configuration
 
             await vscode.workspace.applyEdit(edit);
 
-            output.appendLine(`tsco organized ${sourceCodeFilePath}`);
+            log(`tsco organized ${sourceCodeFilePath}`);
 
             return true;
         }
         else
         {
-            output.appendLine(`tsco skipping organizing ${sourceCodeFilePath}, because it is already organized`);
+            log(`tsco skipping organizing ${sourceCodeFilePath}, because it is already organized`);
         }
     }
     else if (!include)
     {
-        output.appendLine(`tsco skipping organizing ${sourceCodeFilePath}, because it does not match file include patterns`);
+        log(`tsco skipping organizing ${sourceCodeFilePath}, because it does not match file include patterns`);
     }
     else if (exclude)
     {
-        output.appendLine(`tsco skipping organizing ${sourceCodeFilePath}, because it matches file exclude patterns`);
+        log(`tsco skipping organizing ${sourceCodeFilePath}, because it matches file exclude patterns`);
     }
 
     return false;
@@ -256,6 +250,11 @@ export function activate(context: vscode.ExtensionContext)
 
     vscode.workspace.onDidChangeConfiguration(() => settings = Settings.getSettings());
     savingHandler = vscode.workspace.onWillSaveTextDocument(async (e) => await onSave(e.document.uri.fsPath));
+
+    setLogger({
+        log: (message: string) => output.appendLine(message),
+        logError: (error: string | Error | unknown) => output.appendLine(`ERROR: ${error instanceof Error ? error.message : error?.toString() ?? ""}`)
+    });
 }
 
 // #endregion Exported Functions

@@ -7,6 +7,7 @@ import { TypeMemberType } from "../enums/type-member-type";
 import { distinct, remove } from "../helpers/array-helper";
 import { fileExists, readFile } from "../helpers/file-system-helper";
 import { convertPascalCaseToTitleCase } from "../helpers/string-helper";
+import { log } from "../source-code/source-code-logger";
 import { ClassConfiguration } from "./class-configuration";
 import { ClassMemberConfiguration } from "./class-member-configuration";
 import { ClassMemberGroupConfiguration } from "./class-member-group-configuration";
@@ -55,16 +56,16 @@ export class Configuration
             {
                 configuration = JSON.parse(await readFile(configurationFilePath));
 
-                console.log(`tsco using configuration ${configurationFilePath}`);
+                log(`tsco using configuration file ${configurationFilePath}`);
             }
             else
             {
-                console.log("tsco using default configuration");
+                log("tsco using default configuration");
             }
         }
         catch
         {
-            console.log("tsco using default configuration");
+            log("tsco using default configuration");
         }
 
         return new Configuration(
