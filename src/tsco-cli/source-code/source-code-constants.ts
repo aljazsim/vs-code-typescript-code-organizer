@@ -15,3 +15,4 @@ export const endRegion = "#endregion";
 export const anythingRegex = ".+";
 export const spacesRegex = "\\s*";
 export const newLineRegex = `${newLine}|${cr}|${lf}`;
+

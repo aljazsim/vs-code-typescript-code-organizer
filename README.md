@@ -180,7 +180,6 @@ See [TypeScript Code Organizer Command Line Interface](https://www.npmjs.com/pac
 
 - **configuration is no longer compatible with 1.x.x as version 2.x.x uses a configuration file**
 - merged functionality with [TypeScript Class Organizer CLI](https://www.npmjs.com/package/tsco-cli)
-
   - added support for configuration files
   - added support for organizing import statements
   - added ability to include/exclude files
@@ -189,11 +188,8 @@ See [TypeScript Code Organizer Command Line Interface](https://www.npmjs.com/pac
   - added more fine-grained configuration for module organization
   - added more fine-grained configuration for interface organization
   - added more fine-grained configuration for type alias organization
-
 - added ability to create a default configuration file
-
 - added support for regular expressions and globs when putting members above or below the member type group
-
 - added support for sorting member type groups asc, desc or no sorting
 
 ### 2.0.7
@@ -219,8 +215,13 @@ See [TypeScript Code Organizer Command Line Interface](https://www.npmjs.com/pac
 - add support for exported enums, exported interfaces, exported classes and exported types (courtesy of [Carlos Jesús Huchim Ahumada](https://github.com/huchim))
 - add improved import statement grouping
 
-## 2.0.12
+### 2.0.12
+
 - add missing file namespace import grouping
 - add checking relative import source casing
 - add support for declaration dependency order resolution
 - fix issue with file name casing
+
+### 2.0.13
+
+- fix issue with access modifiers not being correctly updated
