@@ -6,6 +6,7 @@ import { PropertyNode } from "../elements/property-node";
 import { SetterNode } from "../elements/setter-node";
 import { AccessModifier } from "../enums/access-modifier";
 import { WriteModifier } from "../enums/write-modifier";
+import { escapeRegex } from "../helpers/string-helper";
 import { anythingRegex, endRegion, newLine, newLineRegex, space, spacesRegex, startRegion } from "./source-code-constants";
 
 export class SourceCode
@@ -81,7 +82,7 @@ export class SourceCode
         const getAbstract = (isAbstract: boolean) => isAbstract ? "abstract " : "";
         const getReadOnly = (writeMode: WriteModifier) => writeMode === WriteModifier.readOnly ? "readonly " : "";
         const getString = (strings: string[]) => ["private"].concat(strings).filter(s => s !== "").map(s => s.trim()).join(space);
-        const getRegex = (strings: string[]) => new RegExp(strings.filter(s => s !== "").map(s => s.trim()).join(spacesRegex));
+        const getRegex = (strings: string[]) => new RegExp(strings.filter(s => s !== "").map(s => escapeRegex(s.trim())).join(spacesRegex));
         const removeHash = (name: string) => name.substring(1);
 
         if (node.name.startsWith("#") && node.accessModifier === AccessModifier.private)
@@ -122,7 +123,10 @@ export class SourceCode
                 const codeAfterDecorators = node.sourceCode.substring(codeDecoratorsEndIndex);
                 const newNodeSourceCode = codeDecorators + codeAfterDecorators.replace(regex, replaceWith);
 
-                this.sourceCode = this.sourceCode.replace(node.sourceCode, newNodeSourceCode); // replace node declaration
+                const sourceCodeBefore = this.sourceCode.substring(0, this.sourceCode.indexOf(node.sourceCode));
+                const sourceCodeAfter = this.sourceCode.substring(this.sourceCode.indexOf(node.sourceCode) + node.sourceCode.length);
+
+                this.sourceCode = sourceCodeBefore + newNodeSourceCode + sourceCodeAfter; // replace node declaration
                 this.sourceCode.replaceAll(`this.${node.name}`, `this.${removeHash(node.name)}`); // replace all references
             }
         }
@@ -135,7 +139,7 @@ export class SourceCode
         const getAbstract = (isAbstract: boolean) => isAbstract ? "abstract " : "";
         const getReadOnly = (writeMode: WriteModifier) => writeMode === WriteModifier.readOnly ? "readonly " : "";
         const getString = (strings: string[]) => ["public"].concat(strings).filter(s => s !== "").map(s => s.trim()).join(space);
-        const getRegex = (strings: string[]) => new RegExp(strings.filter(s => s !== "").map(s => s.trim()).join(spacesRegex));
+        const getRegex = (strings: string[]) => new RegExp(strings.filter(s => s !== "").map(s => escapeRegex(s.trim())).join(spacesRegex));
 
         if (!node.name.startsWith("#") && node.accessModifier === null)
         {
@@ -175,7 +179,10 @@ export class SourceCode
                 const codeAfterDecorators = node.sourceCode.substring(codeDecoratorsEndIndex);
                 const newNodeSourceCode = codeDecorators + codeAfterDecorators.replace(regex, replaceWith);
 
-                this.sourceCode = this.sourceCode.replace(node.sourceCode, newNodeSourceCode);
+                const sourceCodeBefore = this.sourceCode.substring(0, this.sourceCode.indexOf(node.sourceCode));
+                const sourceCodeAfter = this.sourceCode.substring(this.sourceCode.indexOf(node.sourceCode) + node.sourceCode.length);
+
+                this.sourceCode = sourceCodeBefore + newNodeSourceCode + sourceCodeAfter;
             }
         }
     }

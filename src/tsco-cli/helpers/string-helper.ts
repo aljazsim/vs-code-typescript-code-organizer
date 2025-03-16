@@ -2,7 +2,7 @@ import wcmatch from "wildcard-match";
 
 import { space } from "../source-code/source-code-constants";
 
-// #region Exported Functions (3)
+// #region Exported Functions (4)
 
 export function convertPascalCaseToTitleCase(value: string)
 {
@@ -14,6 +14,11 @@ export function convertPascalCaseToTitleCase(value: string)
     }
 
     return value;
+}
+
+export function escapeRegex(regex: string)
+{
+    return regex.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
 }
 
 export function matchRegEx(regex: string, text: string)
