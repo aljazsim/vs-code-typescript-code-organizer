@@ -6,13 +6,14 @@ import { ElementNode } from "../elements/element-node";
 import { ElementNodeGroup } from "../elements/element-node-group";
 import { ImportNode } from "../elements/import-node";
 import { ModuleMemberType } from "../enums/module-member-type";
-import { distinct, except, intersect, remove } from "../helpers/array-helper";
+import { except, intersect, remove } from "../helpers/array-helper";
 import { compareStrings } from "../helpers/comparing-helper";
 import { directoryExists, getDirectoryPath, getFileExtension, getFilePathWithoutExtension, getFiles, getFullPath, getRelativePath, joinPath } from "../helpers/file-system-helper";
 import { getClasses, getEnums, getExpressions, getFunctions, getImports, getInterfaces, getNodeDependencies, getNodeNames, getTypeAliases, getVariables, order } from "../helpers/node-helper";
 import { SourceCode } from "./source-code";
 import { SourceCodeAnalyzer } from "./source-code-analyzer";
 import { spacesRegex } from "./source-code-constants";
+import { resolveDeclarationDependenciesOrder } from "./source-code-dependency-resolver";
 import { log, logError } from "./source-code-logger";
 import { SourceCodePrinter } from "./source-code-printer";
 
@@ -58,7 +59,7 @@ export class SourceCodeOrganizer
 
     // #endregion Public Static Methods
 
-    // #region Private Static Methods (8)
+    // #region Private Static Methods (5)
 
     private static mergeImportsWithSameReferences(imports: ImportNode[])
     {
@@ -137,8 +138,6 @@ export class SourceCodeOrganizer
         {
             this.removeUnusedImports(imports, sourceFile);
         }
-
-        this.removeEmptyImports(imports);
 
         await this.updateImportSourceCasings(sourceFilePath, imports);
 
@@ -342,39 +341,28 @@ export class SourceCodeOrganizer
             else
             {
                 // this file contains no executable code ->  deal with declaration dependency order
-                this.resolveDeclarationDependenciesOrder(regions);
+                resolveDeclarationDependenciesOrder(regions);
             }
         }
 
         return regions;
     }
 
-    private static removeEmptyImports(imports: ImportNode[])
-    {
-        for (const import1 of imports.filter(i => i.isEmptyReference))
-        {
-            if (import1.isModuleReference || !getFileExtension(import1.source) || getFileExtension(import1.source) === ".ts" || getFileExtension(import1.source) === ".js")
-            {
-                remove(imports, import1);
-            }
-        }
-    }
-
     private static removeUnusedImports(imports: ImportNode[], sourceFile: ts.SourceFile)
     {
-        for (const import1 of imports)
+        for (const import1 of [...imports])
         {
             if (import1.namedImports && import1.namedImports.length > 0)
             {
-                for (const identifier of import1.namedImports)
+                for (const identifier of [...import1.namedImports])
                 {
                     if (!SourceCodeAnalyzer.hasReference(sourceFile, identifier.name))
                     {
                         remove(import1.namedImports, identifier);
 
-                        if (import1.namedImports?.length === 0)
+                        if (import1.isEmptyReference)
                         {
-                            import1.namedImports = null;
+                            remove(imports, import1);
                         }
                     }
                 }
@@ -385,6 +373,11 @@ export class SourceCodeOrganizer
                 if (!SourceCodeAnalyzer.hasReference(sourceFile, import1.namespace))
                 {
                     import1.namespace = null;
+
+                    if (import1.isEmptyReference)
+                    {
+                        remove(imports, import1);
+                    }
                 }
             }
 
@@ -393,59 +386,12 @@ export class SourceCodeOrganizer
                 if (!SourceCodeAnalyzer.hasReference(sourceFile, import1.nameBinding))
                 {
                     import1.nameBinding = null;
-                }
-            }
-        }
-    }
 
-    private static resolveDeclarationDependenciesOrder(nodeGroups: ElementNodeGroup[])
-    {
-        for (const nodeGroup of nodeGroups)
-        {
-            this.resolveDeclarationDependenciesOrderWithinGroup(nodeGroup.nodes);
-            this.resolveDeclarationDependenciesOrder(nodeGroup.nodeSubGroups);
-        }
-    }
-
-    private static resolveDeclarationDependenciesOrderWithinGroup(nodes: ElementNode[])
-    {
-        const maxIterations = 1000; // there might be a declaration dependency cycle
-
-        for (let iteration = 0; iteration < maxIterations; iteration++)
-        {
-            let dependenciesDetected = false;
-
-            for (let i = 0; i < nodes.length; i++)
-            {
-                const dependencies = distinct(nodes[i].dependencies.sort());
-
-                for (const dependency of dependencies)
-                {
-                    const dependencyIndex = nodes.findIndex(n => getNodeNames([n]).indexOf(dependency) >= 0);
-
-                    if (dependencyIndex > i)
+                    if (import1.isEmptyReference)
                     {
-                        const node = nodes[i];
-                        const dependencyNode = nodes[dependencyIndex];
-
-                        for (let j = dependencyIndex; j > i; j--)
-                        {
-                            nodes[j] = nodes[j - 1];
-                        }
-
-                        nodes[i] = dependencyNode;
-                        nodes[i + 1] = node;
-
-                        dependenciesDetected = true;
-
-                        break;
+                        remove(imports, import1);
                     }
                 }
-            }
-
-            if (!dependenciesDetected)
-            {
-                break;
             }
         }
     }

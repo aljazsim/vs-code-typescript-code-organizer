@@ -227,8 +227,7 @@ export function getIsStatic(node: ts.ClassDeclaration | ts.GetAccessorDeclaratio
 
 export function getLeadingComment(node: ts.Node, sourceFile: ts.SourceFile)
 {
-    const sourceCode = node.getFullText(sourceFile);
-    const commentRanges = ts.getLeadingCommentRanges(sourceCode, 0)
+    const commentRanges = ts.getLeadingCommentRanges(sourceFile.getFullText(), node.pos);
 
     if (commentRanges && commentRanges.length > 0)
     {
@@ -236,7 +235,7 @@ export function getLeadingComment(node: ts.Node, sourceFile: ts.SourceFile)
         const end = commentRanges[commentRanges.length - 1].end;
         const trailingNewLine = commentRanges[commentRanges.length - 1].hasTrailingNewLine;
 
-        return sourceCode.substring(start, end).trimStart() + (trailingNewLine ? newLine : "");
+        return sourceFile.getFullText().substring(start, end) + (trailingNewLine ? newLine : "");
     }
     else
     {
@@ -339,16 +338,14 @@ export function getNodeNames(nodes: ElementNode[])
 
 export function getTrailingComment(node: ts.Node, sourceFile: ts.SourceFile)
 {
-    const sourceCode = node.getFullText(sourceFile);
-    const commentRanges = ts.getTrailingCommentRanges(sourceCode, 0);
+    const commentRanges = ts.getTrailingCommentRanges(sourceFile.getFullText(), node.end);
 
     if (commentRanges && commentRanges.length > 0)
     {
         const start = commentRanges[0].pos;
         const end = commentRanges[commentRanges.length - 1].end;
-        const trailingNewLine = commentRanges[commentRanges.length - 1].hasTrailingNewLine;
 
-        return sourceCode.substring(start, end).trimEnd() + (trailingNewLine ? newLine : "");
+        return sourceFile.getFullText().substring(start, end);
     }
     else
     {

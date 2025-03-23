@@ -37,8 +37,8 @@ export class InterfaceNode extends ElementNode
 
         if (interfaceDeclaration.members && interfaceDeclaration.members.length > 0)
         {
-            this.membersStart = interfaceDeclaration.members[0].getFullStart() - interfaceDeclaration.getFullStart();
-            this.membersEnd = interfaceDeclaration.members[interfaceDeclaration.members.length - 1].getEnd() - interfaceDeclaration.getFullStart();
+            this.membersStart = this.getOpeningBraceIndex(sourceFile, interfaceDeclaration) + 1 - interfaceDeclaration.getStart(sourceFile);
+            this.membersEnd = this.getClosingBraceIndex(sourceFile, interfaceDeclaration) - 1 - interfaceDeclaration.getStart(sourceFile);
         }
 
         // members

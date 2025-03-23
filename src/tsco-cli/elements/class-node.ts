@@ -45,8 +45,8 @@ export class ClassNode extends ElementNode
 
         if (classDeclaration.members && classDeclaration.members.length > 0)
         {
-            this.membersStart = classDeclaration.members[0].getFullStart() - classDeclaration.getFullStart();
-            this.membersEnd = classDeclaration.members[classDeclaration.members.length - 1].getEnd() - classDeclaration.getFullStart();
+            this.membersStart = this.getOpeningBraceIndex(sourceFile, classDeclaration) + 1 - classDeclaration.getStart(sourceFile);
+            this.membersEnd = this.getClosingBraceIndex(sourceFile, classDeclaration) - 1 - classDeclaration.getStart(sourceFile);
         }
 
         this.decorators = getDecorators(classDeclaration, sourceFile);

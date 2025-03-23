@@ -39,8 +39,8 @@ export class TypeAliasNode extends ElementNode
 
                 if (typeLiteral.members && typeLiteral.members.length > 0)
                 {
-                    this.membersStart = typeLiteral.members[0].getFullStart() - typeAliasDeclaration.getFullStart();
-                    this.membersEnd = typeLiteral.members[typeLiteral.members.length - 1].getEnd() - typeAliasDeclaration.getFullStart();
+                    this.membersStart = this.getOpeningBraceIndex(sourceFile, typeLiteral) + 1 - typeAliasDeclaration.getStart(sourceFile);
+                    this.membersEnd = this.getClosingBraceIndex(sourceFile, typeLiteral) - 1 - typeAliasDeclaration.getStart(sourceFile);
 
                     // members
                     for (const member of typeLiteral.members)
