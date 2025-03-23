@@ -222,6 +222,8 @@ See [TypeScript Code Organizer Command Line Interface](https://www.npmjs.com/pac
 - add support for declaration dependency order resolution
 - fix issue with file name casing
 
-### 2.0.13
+### 2.0.15
 
 - fix issue with access modifiers not being correctly updated
+- fix issue with leading and trailing comments being lost
+- fix issue with unused imports not being removed correctly

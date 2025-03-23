@@ -3,8 +3,8 @@ import * as ts from "typescript";
 import { InterfaceConfiguration } from "../configuration/interface-configuration";
 import { InterfaceMemberType } from "../enums/interface-member-type";
 import { getIsExport, isReadOnly, isWritable, order } from "../helpers/node-helper";
-import { ElementNode } from "./element-node";
 import { ElementNodeGroup } from "./element-node-group";
+import { ElementNode } from "./element-node";
 import { GetterSignatureNode } from "./getter-signature-node";
 import { IndexSignatureNode } from "./index-signature-node";
 import { MethodSignatureNode } from "./method-signature-node";
@@ -37,8 +37,8 @@ export class InterfaceNode extends ElementNode
 
         if (interfaceDeclaration.members && interfaceDeclaration.members.length > 0)
         {
-            this.membersStart = interfaceDeclaration.members[0].getFullStart() - interfaceDeclaration.getFullStart();
-            this.membersEnd = interfaceDeclaration.members[interfaceDeclaration.members.length - 1].getEnd() - interfaceDeclaration.getFullStart();
+            this.membersStart = this.getOpeningBraceIndex(sourceFile, interfaceDeclaration) + 1 - interfaceDeclaration.getStart(sourceFile);
+            this.membersEnd = this.getClosingBraceIndex(sourceFile, interfaceDeclaration) - 1 - interfaceDeclaration.getStart(sourceFile);
         }
 
         // members

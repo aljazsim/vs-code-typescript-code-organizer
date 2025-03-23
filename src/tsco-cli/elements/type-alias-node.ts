@@ -3,8 +3,8 @@ import * as ts from "typescript";
 import { TypeConfiguration } from "../configuration/type-configuration";
 import { TypeMemberType } from "../enums/type-member-type";
 import { getIsExport, order } from "../helpers/node-helper";
-import { ElementNode } from "./element-node";
 import { ElementNodeGroup } from "./element-node-group";
+import { ElementNode } from "./element-node";
 import { IndexSignatureNode } from "./index-signature-node";
 import { MethodSignatureNode } from "./method-signature-node";
 import { PropertySignatureNode } from "./property-signature-node";
@@ -39,8 +39,8 @@ export class TypeAliasNode extends ElementNode
 
                 if (typeLiteral.members && typeLiteral.members.length > 0)
                 {
-                    this.membersStart = typeLiteral.members[0].getFullStart() - typeAliasDeclaration.getFullStart();
-                    this.membersEnd = typeLiteral.members[typeLiteral.members.length - 1].getEnd() - typeAliasDeclaration.getFullStart();
+                    this.membersStart = this.getOpeningBraceIndex(sourceFile, typeLiteral) + 1 - typeAliasDeclaration.getStart(sourceFile);
+                    this.membersEnd = this.getClosingBraceIndex(sourceFile, typeLiteral) - 1 - typeAliasDeclaration.getStart(sourceFile);
 
                     // members
                     for (const member of typeLiteral.members)

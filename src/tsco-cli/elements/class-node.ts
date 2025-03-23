@@ -6,8 +6,8 @@ import { WriteModifier } from "../enums/write-modifier";
 import { getDecorators, getDependencies, getIsAbstract, getIsExport, getIsStatic, isPrivate, isProtected, isPublic, isReadOnly, isWritable, order } from "../helpers/node-helper";
 import { AccessorNode } from "./accessor-node";
 import { ConstructorNode } from "./constructor-node";
-import { ElementNode } from "./element-node";
 import { ElementNodeGroup } from "./element-node-group";
+import { ElementNode } from "./element-node";
 import { GetterNode } from "./getter-node";
 import { MethodNode } from "./method-node";
 import { PropertyNode } from "./property-node";
@@ -45,8 +45,8 @@ export class ClassNode extends ElementNode
 
         if (classDeclaration.members && classDeclaration.members.length > 0)
         {
-            this.membersStart = classDeclaration.members[0].getFullStart() - classDeclaration.getFullStart();
-            this.membersEnd = classDeclaration.members[classDeclaration.members.length - 1].getEnd() - classDeclaration.getFullStart();
+            this.membersStart = this.getOpeningBraceIndex(sourceFile, classDeclaration) + 1 - classDeclaration.getStart(sourceFile);
+            this.membersEnd = this.getClosingBraceIndex(sourceFile, classDeclaration) - 1 - classDeclaration.getStart(sourceFile);
         }
 
         this.decorators = getDecorators(classDeclaration, sourceFile);
