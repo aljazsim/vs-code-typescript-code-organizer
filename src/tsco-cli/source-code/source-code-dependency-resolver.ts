@@ -1,5 +1,5 @@
-import { ElementNodeGroup } from "../elements/element-node-group";
 import { ElementNode } from "../elements/element-node";
+import { ElementNodeGroup } from "../elements/element-node-group";
 import { distinct } from "../helpers/array-helper";
 import { getNodeNames } from "../helpers/node-helper";
 

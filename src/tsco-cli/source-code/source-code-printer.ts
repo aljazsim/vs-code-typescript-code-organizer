@@ -2,8 +2,8 @@ import { Configuration } from "../configuration/configuration";
 import { ImportConfiguration } from "../configuration/import-configuration";
 import { AccessorNode } from "../elements/accessor-node";
 import { ClassNode } from "../elements/class-node";
-import { ElementNodeGroup } from "../elements/element-node-group";
 import { ElementNode } from "../elements/element-node";
+import { ElementNodeGroup } from "../elements/element-node-group";
 import { ExpressionNode } from "../elements/expression-node";
 import { FunctionNode } from "../elements/function-node";
 import { GetterNode } from "../elements/getter-node";
@@ -22,9 +22,9 @@ import { VariableNode } from "../elements/variable-node";
 import { ImportExpand } from "../enums/import-expand";
 import { ImportSourceFilePathQuoteType } from "../enums/import-source-file-path-quote-type";
 import { WriteModifier } from "../enums/write-modifier";
+import { SourceCode } from "./source-code";
 import { doubleQuote, newLine, newLineRegex, singleQuote, space } from "./source-code-constants";
 import { resolveDeclarationDependenciesOrder } from "./source-code-dependency-resolver";
-import { SourceCode } from "./source-code";
 
 export class SourceCodePrinter
 {
